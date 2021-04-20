@@ -3,6 +3,7 @@ package pooro.blog.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import pooro.blog.domain.PostStatus;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,22 +19,22 @@ class AwsS3ServiceTest {
     @Test
     void 파일_업로드() {
         //given
+        PostStatus status = PostStatus.PUBLIC;
         String subject = "upload_test";
         String content = "테스트 업로드 \n test upload \n 😀😃😄";
         String category = "spring";
 
-        String path = "posts/" + category + "/";
+        String path = "posts/public/" + category + "/";
         String key = path + subject + ".md";
-        String expectedUrl = "https://pooro-blog.s3.ap-northeast-2.amazonaws.com/" + key;
 
-        File file = fileService.create(category, subject, content, "md");
+        File file = fileService.createPost(status.toString().toLowerCase(), category, subject, content);
 
         //when
-        String fileUrl = awsS3Service.upload(path, file);
+        String fileKey = awsS3Service.upload(path, file);
 
         //then
         try {
-            assertEquals(expectedUrl, fileUrl, "bucket에 업로드된 파일의 url이 정확해야합니다.");
+            assertEquals(key, fileKey, "bucket에 업로드된 파일의 key가 정확해야합니다.");
             assertEquals(
                     fileService.getContent(key),
                     awsS3Service.getObjectContent(key),

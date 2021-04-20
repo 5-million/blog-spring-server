@@ -25,7 +25,7 @@ public class AwsS3Service {
         amazonS3Client.putObject(new PutObjectRequest(bucket, key, file)
                 .withCannedAcl(CannedAccessControlList.PublicRead));
 
-        return amazonS3Client.getUrl(bucket, key).toString();
+        return key;
     }
 
     /**

@@ -13,24 +13,24 @@ public class FileService {
      * project 실행 시 posts 폴더가 없을 경우 생성
      */
     public FileService() {
-        File postsFolder = new File("posts");
+        File postsPublicFolder = new File("posts/PUBLIC");
+        File postsTempFolder = new File("posts/TEMP");
 
-        if(!postsFolder.exists()) {
-            try {
-                postsFolder.mkdir();
-            } catch (SecurityException e) {
-                e.printStackTrace();
-            }
+        try {
+            if (!postsPublicFolder.exists()) postsPublicFolder.mkdirs();
+            if (!postsTempFolder.exists()) postsTempFolder.mkdirs();
+        } catch (SecurityException e) {
+            e.printStackTrace();
         }
     }
 
     /**
-     * 파일 생성
+     * 포스트 파일 생성
      */
-    public File create(String category, String subject, String content, String extension) {
-        String pathname = "posts/" + category + "/"
+    public File createPost(String status, String category, String subject, String content) {
+        String pathname = "posts/" + status + "/" + category + "/"
                 + subject.replace(" ", "_")
-                + "." + extension;
+                + ".md";
 
         File file = new File(pathname);
         try {
