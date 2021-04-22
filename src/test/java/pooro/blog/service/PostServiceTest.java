@@ -7,7 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import pooro.blog.domain.Category;
 import pooro.blog.domain.Post;
 import pooro.blog.domain.PostStatus;
-import pooro.blog.exception.DuplicatePostException;
+import pooro.blog.dto.PostUploadDto;
+import pooro.blog.exception.post.PostDuplicateException;
 import pooro.blog.repository.CategoryRepository;
 import pooro.blog.repository.PostRepository;
 
@@ -28,7 +29,7 @@ class PostServiceTest {
     @Autowired CategoryRepository categoryRepository;
 
     @Test
-    void 포스트_업로드() {
+    void 포스트_업로드() throws IOException {
         //given
         PostStatus status = PostStatus.PUBLIC;
         String subject = "upload";
@@ -36,11 +37,14 @@ class PostServiceTest {
         String category = "spring";
         String key = "posts/public/" + category + "/" + subject.replace(" ", "_") + ".md";
 
+        PostUploadDto postDto = PostUploadDto.createPostUploadDto(status, category, subject, content);
+
+
         Category postCategory = Category.createCategory(category);
         categoryRepository.save(postCategory);
 
         //when
-        Long postId = postService.upload(status, category, subject, content);
+        Long postId = postService.upload(postDto);
         Post post = postRepository.findOne(postId).get();
 
         //then
@@ -69,7 +73,7 @@ class PostServiceTest {
     }
 
     @Test
-    void 포스트_제목_중복_예외() {
+    void 포스트_제목_중복_예외() throws IOException {
         //given
         PostStatus status = PostStatus.PUBLIC;
         String subject = "upload";
@@ -78,15 +82,19 @@ class PostServiceTest {
         String category2 = "jpa";
         String key = "posts/public/" + category + "/" + subject.replace(" ", "_") + ".md";
 
+        PostUploadDto postDto1 = PostUploadDto.createPostUploadDto(status, category, subject, content);
+
+        PostUploadDto postDto2 = PostUploadDto.createPostUploadDto(status, category2, subject, content);
+
         Category postCategory = Category.createCategory(category);
         categoryRepository.save(postCategory);
-        postService.upload(status, category, subject, content);
+        postService.upload(postDto1);
 
         //when
-        DuplicatePostException exception1 = assertThrows(DuplicatePostException.class,
-                () -> postService.upload(status, category, subject, content));
-        DuplicatePostException exception2 = assertThrows(DuplicatePostException.class,
-                () -> postService.upload(status, category2, subject, content));
+        PostDuplicateException exception1 = assertThrows(PostDuplicateException.class,
+                () -> postService.upload(postDto1));
+        PostDuplicateException exception2 = assertThrows(PostDuplicateException.class,
+                () -> postService.upload(postDto2));
 
         //then
         assertEquals("이미 존재하는 포스트입니다.", exception1.getMessage());

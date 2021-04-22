@@ -13,7 +13,7 @@ class FileServiceTest {
     private final FileService fileService = new FileService();
 
     @Test
-    void 파일_생성() {
+    void 파일_생성() throws IOException {
         //given
         PostStatus status = PostStatus.PUBLIC;
         String category = "spring";

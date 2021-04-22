@@ -17,7 +17,7 @@ class AwsS3ServiceTest {
     @Autowired FileService fileService;
 
     @Test
-    void 파일_업로드() {
+    void 파일_업로드() throws IOException {
         //given
         PostStatus status = PostStatus.PUBLIC;
         String subject = "upload_test";
