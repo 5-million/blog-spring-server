@@ -6,6 +6,7 @@ import pooro.blog.domain.Category;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -18,11 +19,11 @@ public class CategoryRepository {
         return category.getId();
     }
 
-    public Category findByName(String name) {
+    public Optional<Category> findByName(String name) {
         List<Category> result =  em.createQuery("select c from Category c where c.name = :name")
                 .setParameter("name", name)
                 .getResultList();
 
-        return result.get(0);
+        return result.stream().findAny();
     }
 }

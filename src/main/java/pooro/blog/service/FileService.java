@@ -27,22 +27,18 @@ public class FileService {
     /**
      * 포스트 파일 생성
      */
-    public File createPost(String status, String category, String subject, String content) {
+    public File createPost(String status, String category, String subject, String content) throws IOException{
         String pathname = "posts/" + status + "/" + category + "/"
                 + subject.replace(" ", "_")
                 + ".md";
 
         File file = new File(pathname);
-        try {
-            boolean result = file.createNewFile();
+        boolean result = file.createNewFile();
 
-            if(result) log.info(pathname + " 생성 성공");
-            else log.info(pathname + " 생성 실패");
+        if(result) log.info(pathname + " 생성 성공");
+        else log.error(pathname + " 생성 실패");
 
-            writeContentToFile(content, file); // content를 file에 작성
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        writeContentToFile(content, file); // content를 file에 작성
 
         return file;
     }

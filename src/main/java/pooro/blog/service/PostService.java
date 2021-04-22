@@ -7,11 +7,15 @@ import org.springframework.transaction.annotation.Transactional;
 import pooro.blog.domain.Category;
 import pooro.blog.domain.Post;
 import pooro.blog.domain.PostStatus;
-import pooro.blog.exception.DuplicatePostException;
+import pooro.blog.dto.PostUploadDto;
+import pooro.blog.exception.category.CategoryNotFoundException;
+import pooro.blog.exception.post.PostDuplicateException;
 import pooro.blog.repository.CategoryRepository;
 import pooro.blog.repository.PostRepository;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -28,9 +32,20 @@ public class PostService {
      * 포스트 업로드
      */
     @Transactional
-    public Long upload(PostStatus status, String category, String subject, String content) {
+    public Long upload(PostUploadDto postDto) throws PostDuplicateException,
+            CategoryNotFoundException,
+            IOException {
+        PostStatus status = postDto.getStatus();
+        String category = postDto.getCategory();
+        String subject = postDto.getSubject();
+        String content = postDto.getContent();
+
         // 포스트 중복 검사
         validateDuplicatePost(subject);
+
+        // 카테고리 유효성 검사
+        Optional<Category> optionalCategory = categoryRepository.findByName(category);
+        Category postCategory = getCategory(optionalCategory);
 
         // 파일 생성
         File file = fileService.createPost(status.toString().toLowerCase(),
@@ -43,7 +58,6 @@ public class PostService {
         String s3Key = awsS3Service.upload(path, file);
 
         // post db에 저장
-        Category postCategory = categoryRepository.findByName(category);
         Post post = Post.builder()
                 .category(postCategory)
                 .subject(subject)
@@ -58,10 +72,19 @@ public class PostService {
         return postId;
     }
 
+    private Category getCategory(Optional<Category> optionalCategory) {
+        Category postCategory;
+
+        if(optionalCategory.isPresent()) postCategory = optionalCategory.get();
+        else throw new CategoryNotFoundException();
+
+        return postCategory;
+    }
+
     private void validateDuplicatePost(String subject) {
         // subject 중복 검사
         postRepository.findBySubject(subject).ifPresent(p -> {
-            throw new DuplicatePostException("이미 존재하는 포스트입니다.");
+            throw new PostDuplicateException();
         });
     }
 }
