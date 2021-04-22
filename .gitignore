@@ -8,6 +8,9 @@ build/
 ### properties ###
 /src/main/resources/*.yml
 
+### post file ###
+/posts
+
 ### STS ###
 .apt_generated
 .classpath
