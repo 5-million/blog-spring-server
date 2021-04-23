@@ -29,4 +29,12 @@ public class Category {
 
         return category;
     }
+
+    public static Category createCategory(Long id, String name) {
+        Category category = new Category();
+        category.id = id;
+        category.name = name;
+
+        return category;
+    }
 }

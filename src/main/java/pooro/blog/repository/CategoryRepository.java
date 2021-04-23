@@ -14,9 +14,14 @@ public class CategoryRepository {
 
     private final EntityManager em;
 
-    public Long save(Category category) {
+    public Category save(Category category) {
         em.persist(category);
-        return category.getId();
+        return category;
+    }
+
+    public Optional<Category> findOne(Long id) {
+        Category category = em.find(Category.class, id);
+        return Optional.ofNullable(category);
     }
 
     public Optional<Category> findByName(String name) {
