@@ -14,7 +14,6 @@ import java.io.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {
@@ -41,7 +40,7 @@ class FileServiceTest {
         //then
         String createdContent = getContent(post);
 
-        assertEquals(true, post.exists(), "파일이 존재해야합니다.");
+        assertTrue(post.exists(), "파일이 존재해야합니다.");
         assertEquals(pathname, post.getPath(), "경로가 정확해야합니다.");
         assertEquals(content, createdContent, "입력된 내용이 정확해야합니다.");
     }
@@ -79,7 +78,7 @@ class FileServiceTest {
         File file = new File(pathname);
         String fileContent = getContent(file);
 
-        assertEquals(true, file.exists(), "s3에서 받은 내용으로 파일을 생성해야합니다.");
+        assertTrue(file.exists(), "s3에서 받은 내용으로 파일을 생성해야합니다.");
         assertEquals(content, postContent, "포스트의 내용이 정확해야합니다.");
         assertEquals(content, fileContent, "새로 만들어진 파일의 내용이 정확해야합니다.");
     }
@@ -99,18 +98,38 @@ class FileServiceTest {
         //then
         assertEquals(ErrorCode.POST_NOT_FOUND, thrown.getErrorCode(), "POST_NOT_FOUND 예외를 던져야합니다.");
     }
+    
+    @Test
+    void 카테고리_폴더_생성() throws IOException {
+        //given
+        String name = "category";
+        
+        //when
+        fileService.crateCategoryFolder(name);
+        
+        //then
+        File folderInTemp = new File("posts/temp/" + name);
+        File folderInPublic = new File("posts/public/" + name);
+
+        assertTrue(folderInTemp.exists(), "temp 폴더에 카테고리 폴더가 생성되어야 합니다.");
+        assertTrue(folderInPublic.exists(), "public 폴더에 카테고리 폴더가 생성되어야 합니다.");
+
+        //after
+        if (folderInTemp.exists()) folderInTemp.delete();
+        if (folderInPublic.exists()) folderInPublic.delete();
+    }
 
     private String getContent(File file) throws IOException {
         FileReader fileReader = new FileReader(file);
         BufferedReader br = new BufferedReader(fileReader);
 
-        String content = "";
-        String readLine = null;
+        StringBuilder content = new StringBuilder();
+        String readLine;
         while ((readLine = br.readLine()) != null) { // 줄 단위로 읽기
-            content += readLine + "\n"; // 줄 단위로 읽기 때문에 줄 끝에 개행문자 추가
+            content.append(readLine).append("\n"); // 줄 단위로 읽기 때문에 줄 끝에 개행문자 추가
         }
 
-        return content.trim();
+        return content.toString().trim();
     }
     private void writeContentToFile(String content, File file) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));

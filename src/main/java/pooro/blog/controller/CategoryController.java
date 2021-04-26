@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import pooro.blog.exception.category.CategoryDuplicateException;
 import pooro.blog.service.CategoryService;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -20,7 +21,7 @@ public class CategoryController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void create(@RequestBody Map<String, String> body) throws CategoryDuplicateException {
+    public void create(@RequestBody Map<String, String> body) throws CategoryDuplicateException, IOException {
         categoryService.create(body.get("name"));
     }
 }

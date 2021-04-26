@@ -78,6 +78,21 @@ public class FileService {
         return content.trim();
     }
 
+    /**
+     * public과 temp 폴더 안에 카테고리 폴더 생성
+     */
+    public void crateCategoryFolder(String name) throws IOException {
+        // temp와 public 상태 모두 카테고리 폴더 할당
+        File folderInTemp = new File("posts/temp/" + name);
+        File folderInPublic = new File("posts/public/" + name);
+
+        // 폴더 생성
+        boolean resultInTemp = folderInTemp.mkdir();
+        boolean resultInPublic = folderInPublic.mkdir();
+
+        if (!(resultInTemp & resultInPublic)) throw new IOException("카테고리 폴더 생성 에러");
+    }
+
     private static void writeContentToFile(String content, File file) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         writer.write(content);
