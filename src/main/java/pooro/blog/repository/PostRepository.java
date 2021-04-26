@@ -31,4 +31,9 @@ public class PostRepository {
 
         return result.stream().findAny();
     }
+
+    public Optional<List<Post>> findAll() {
+        List<Post> result = em.createQuery("select p from Post p").getResultList();
+        return Optional.ofNullable(result);
+    }
 }

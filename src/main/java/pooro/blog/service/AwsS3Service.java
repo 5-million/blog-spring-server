@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import pooro.blog.exception.post.PostNotFoundException;
 
 import java.io.*;
 
@@ -20,8 +21,7 @@ public class AwsS3Service {
     /**
      * file을 bucket에 업로드
      */
-    public String upload(String path, File file) {
-        String key = path + file.getName();
+    public String upload(String key, File file) {
         amazonS3Client.putObject(new PutObjectRequest(bucket, key, file)
                 .withCannedAcl(CannedAccessControlList.PublicRead));
 
@@ -31,10 +31,13 @@ public class AwsS3Service {
     /**
      * bucket에 있는 file의 내용 가져오기
      */
-    public String getObjectContent(String key) throws IOException {
-        S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, key));
-
-        return getContent(object.getObjectContent());
+    public String getObjectContent(String key) throws IOException, PostNotFoundException {
+        try {
+            S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, key));
+            return getContent(object.getObjectContent());
+        } catch (AmazonS3Exception e) {
+            throw new PostNotFoundException();
+        }
     }
 
     /**

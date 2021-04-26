@@ -40,7 +40,7 @@ public class ControllerExceptionHandler {
 
         ErrorResponse response = ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message(e.toString())
+                .message(HttpStatus.INTERNAL_SERVER_ERROR.toString())
                 .build();
 
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);

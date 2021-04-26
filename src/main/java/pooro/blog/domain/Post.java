@@ -1,9 +1,6 @@
 package pooro.blog.domain;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -13,6 +10,7 @@ import static javax.persistence.FetchType.*;
 
 @Entity
 @Getter
+@ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Post {
 
@@ -38,7 +36,8 @@ public class Post {
     private PostStatus status;
 
     @Builder
-    private Post(Category category, String subject, String filePath, String s3Key, PostStatus status) {
+    private Post(Long id, Category category, String subject, String filePath, String s3Key, PostStatus status) {
+        this.id = id;
         this.category = category;
         this.subject = subject;
         this.filePath = filePath;
