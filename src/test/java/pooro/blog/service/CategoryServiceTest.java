@@ -9,10 +9,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import pooro.blog.domain.Category;
 import pooro.blog.error.ErrorCode;
 import pooro.blog.exception.category.CategoryDuplicateException;
+import pooro.blog.exception.category.CategoryNotExistException;
 import pooro.blog.repository.CategoryRepository;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -67,5 +70,38 @@ class CategoryServiceTest {
 
         //then
         assertEquals(ErrorCode.CATEGORY_DUPLICATE, thrown.getErrorCode(), "카테고리 중복 예외를 발생시켜야 합니다.");
+    }
+
+    @Test
+    void 모든_카테고리_가져오기() {
+        //given
+        List<Category> categories = new ArrayList<>();
+        for (Long i = 0L; i < 10; i++) {
+            categories.add(Category.createCategory(i, "category" + i.toString()));
+        }
+
+        given(categoryRepository.findAll()).willReturn(Optional.ofNullable(categories));
+
+        //when
+        List<String> allCategory = categoryService.getAll();
+
+        //then
+        assertEquals(categories.size(), allCategory.size(), "카테고리 개수가 같아야합니다.");
+        for (int i = 0; i < categories.size(); i++) {
+            assertEquals(categories.get(i).getName(), allCategory.get(i), "모든 카테고리의 이름이 같아야합니다.");
+        }
+    }
+
+    @Test
+    void 모든_카테고리_가져오기_NotExistException() {
+        //given
+        given(categoryRepository.findAll()).willReturn(Optional.ofNullable(null));
+
+        //when
+        CategoryNotExistException thrown =
+                assertThrows(CategoryNotExistException.class,() -> categoryService.getAll());
+
+        //then
+        assertEquals(ErrorCode.CATEGORY_NOT_EXIST, thrown.getErrorCode(), "CATEGORY_NOT_EXIST 예외를 던져야합니다.");
     }
 }
