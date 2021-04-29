@@ -5,9 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pooro.blog.domain.Category;
 import pooro.blog.exception.category.CategoryDuplicateException;
+import pooro.blog.exception.category.CategoryNotExistException;
 import pooro.blog.repository.CategoryRepository;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,6 +37,22 @@ public class CategoryService {
 
         // 카테고리 저장
         return categoryRepository.save(category).getId();
+    }
+
+    public List<String> getAll() {
+        Optional<List<Category>> optCategories = categoryRepository.findAll();
+
+        if(optCategories.isPresent()) {
+            List<Category> categories = optCategories.get();
+            List<String> categoryNames = new ArrayList<>();
+
+            for(Category c : categories) {
+                categoryNames.add(c.getName());
+            }
+
+            return categoryNames;
+        }
+        else throw new CategoryNotExistException();
     }
 
     private void validateDuplicateCategory(String name) {

@@ -1,0 +1,26 @@
+.header h2 {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.new-btn {
+  float: right;
+  border-width: 2px;
+  border-style: solid;
+  font-weight: bold;
+  margin: 20px 0 20px 20px;
+}
+
+.new-category {
+  border-color: rgb(7, 170, 7);
+  color: rgb(7, 170, 7);
+}
+
+.new-post {
+  border-color: rgb(50, 50, 221);
+  color: rgb(50, 50, 221);
+}
+
+.table-responsive {
+  clear: both;
+}

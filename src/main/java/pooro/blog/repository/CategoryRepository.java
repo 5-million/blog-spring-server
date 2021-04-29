@@ -31,4 +31,9 @@ public class CategoryRepository {
 
         return result.stream().findAny();
     }
+
+    public Optional<List<Category>> findAll() {
+        List<Category> categories = em.createQuery("select c from Category c").getResultList();
+        return Optional.ofNullable(categories);
+    }
 }
