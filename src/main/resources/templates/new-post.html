@@ -64,7 +64,7 @@
             <input
               type="file"
               class="form-control form-control-sm"
-              id="img"
+              id="upload-img"
               aria-describedby="imageUpload"
               aria-label="Upload"
               placeholder="이미지 선택"
@@ -73,6 +73,7 @@
               class="btn btn-outline-secondary btn-sm"
               type="button"
               id="imageUpload"
+              onclick="imageUploadBtn()"
             >
               upload
             </button>
@@ -82,18 +83,12 @@
           <div class="row">
             <div class="col">
               <ul class="img-path" id="img-path-ul-0">
-                <li>
-                  <i class="far fa-copy"></i>
-                  <a href="#">img_path</a>
-                </li>
+                <!-- 업로드된 이미지 url + 복사기능 -->
               </ul>
             </div>
             <div class="col">
               <ul class="img-path" id="img-path-ul-1">
-                <li>
-                  <i class="far fa-copy"></i>
-                  <a href="#">img_path</a>
-                </li>
+                <!-- 업로드된 이미지 url + 복사기능 -->
               </ul>
             </div>
           </div>
