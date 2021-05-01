@@ -5,9 +5,11 @@ import com.amazonaws.services.s3.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import pooro.blog.exception.post.PostNotFoundException;
 
 import java.io.*;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,24 @@ public class AwsS3Service {
                 .withCannedAcl(CannedAccessControlList.PublicRead));
 
         return key;
+    }
+
+    /**
+     * 버켓에 이미지 업로드
+     * @return 버켓의 이미지 객체 url
+     */
+    public String uploadImage(MultipartFile file) throws IOException {
+        UUID uuid = UUID.randomUUID();
+        String key = "img/" + uuid.toString() + "-" + file.getOriginalFilename();
+
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentType(file.getContentType());
+        objectMetadata.setContentLength(file.getSize());
+
+        amazonS3Client.putObject(new PutObjectRequest(bucket, key, file.getInputStream(), objectMetadata)
+                .withCannedAcl(CannedAccessControlList.PublicRead));
+
+        return amazonS3Client.getUrl(bucket, key).toString();
     }
 
     /**
