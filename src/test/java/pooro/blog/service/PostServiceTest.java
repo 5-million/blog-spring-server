@@ -21,9 +21,7 @@ import pooro.blog.repository.PostRepository;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -197,6 +195,57 @@ class PostServiceTest {
 
         //then
         assertEquals(ErrorCode.POST_NOT_EXIST, thrown.getErrorCode(), "POST_NOT_EXIST 예외를 던져야합니다.");
+    }
+
+    @Test
+    void getByCategory() {
+        //given
+        List<Post> testPostList = new ArrayList<>();
+        String category = "jpa";
+        for (Long id = 0L; id < 50; id++) {
+            Post testPost = createTestPost(id, category);
+            testPostList.add(testPost);
+        }
+
+        given(postRepository.findByCategory(anyString())).willReturn(Optional.ofNullable(testPostList));
+
+        //when
+        List<PostListDto> postListByCategory = postService.getByCategory(category);
+
+        //then
+        List<PostListDto> expectedDtoList = new ArrayList<>();
+        for (Post post : testPostList) {
+            PostListDto dto = PostListDto.builder()
+                    .id(post.getId())
+                    .category(post.getCategory())
+                    .subject(post.getSubject())
+                    .uploadDate(post.getUploadDate())
+                    .status(post.getStatus())
+                    .build();
+            expectedDtoList.add(dto);
+        }
+
+        assertEquals(expectedDtoList.size(), postListByCategory.size(), "사이즈가 정확해야 합니다.");
+        for (int index = 0; index < expectedDtoList.size(); index++) {
+            assertEquals(
+                    expectedDtoList.get(index).toString(),
+                    postListByCategory.get(index).toString(),
+                    "각 데이터가 정확해야 합ㄴ디ㅏ."
+            );
+        }
+    }
+
+    @Test
+    void getByCategory_NotExistException() {
+        //given
+        given(postRepository.findByCategory(anyString())).willReturn(Optional.ofNullable(null));
+
+        //when
+        PostNotExistException thrown =
+                assertThrows(PostNotExistException.class, () -> postService.getByCategory("jpa"));
+
+        //then
+        assertEquals(ErrorCode.POST_NOT_EXIST, thrown.getErrorCode(), "POST_NOT_EXIST 예외를 던져야 합니다.");
     }
 
     private PostUploadDto createPostUploadDtoRequest(String category) {

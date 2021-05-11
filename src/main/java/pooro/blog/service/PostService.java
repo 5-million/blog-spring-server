@@ -129,6 +129,30 @@ public class PostService {
     }
 
     /**
+     * 카테고리별 포스트
+     */
+    public List<PostListDto> getByCategory(String category) {
+        Optional<List<Post>> optPostList = postRepository.findByCategory(category);
+
+        if(!optPostList.isPresent()) throw new PostNotExistException();
+
+        List<Post> postList = optPostList.get();
+        List<PostListDto> postsByCategory = new ArrayList<>();
+        for (Post post : postList) {
+            PostListDto dto = PostListDto.builder()
+                    .id(post.getId())
+                    .category(post.getCategory())
+                    .subject(post.getSubject())
+                    .status(post.getStatus())
+                    .uploadDate(post.getUploadDate())
+                    .build();
+            postsByCategory.add(dto);
+        }
+
+        return postsByCategory;
+    }
+
+    /**
      * 저장될 파일의 pathname 생성
      */
     private String createPathname(PostStatus status, String category, String subject) {

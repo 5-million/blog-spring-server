@@ -1,6 +1,7 @@
 package pooro.blog.repository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import pooro.blog.domain.Post;
 
@@ -34,6 +35,14 @@ public class PostRepository {
 
     public Optional<List<Post>> findAll() {
         List<Post> result = em.createQuery("select p from Post p").getResultList();
+        return Optional.ofNullable(result);
+    }
+
+    public Optional<List<Post>> findByCategory(String category) {
+        List<Post> result = em.createQuery("select p from Post p where p.category.name = :category")
+                .setParameter("category", category)
+                .getResultList();
+
         return Optional.ofNullable(result);
     }
 }

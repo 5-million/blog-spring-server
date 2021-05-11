@@ -48,4 +48,13 @@ public class PostController {
             throws PostDuplicateException, CategoryNotFoundException, IOException {
         postService.upload(postDto);
     }
+
+    /**
+     * 카테고리별 포스트 목록
+     */
+    @GetMapping("/category")
+    @ResponseStatus(HttpStatus.OK)
+    public List<PostListDto> getByCategory(@RequestParam("name") String name) {
+        return postService.getByCategory(name);
+    }
 }
