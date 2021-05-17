@@ -36,7 +36,7 @@ public class AwsS3Service {
      */
     public String uploadImage(MultipartFile file) throws IOException {
         UUID uuid = UUID.randomUUID();
-        String key = "img/" + uuid.toString() + "-" + file.getOriginalFilename();
+        String key = "images/" + uuid.toString() + "-" + file.getOriginalFilename();
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(file.getContentType());
