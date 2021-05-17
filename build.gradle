@@ -4,8 +4,8 @@ plugins {
 	id 'java'
 }
 
-group = 'pooro'
-version = '0.0.1-SNAPSHOT'
+group = 'eol-g'
+version = '0.1.2-SNAPSHOT'
 sourceCompatibility = '11'
 
 configurations {
