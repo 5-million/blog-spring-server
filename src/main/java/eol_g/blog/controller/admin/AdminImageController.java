@@ -1,4 +1,4 @@
-package eol_g.blog.controller;
+package eol_g.blog.controller.admin;
 
 import eol_g.blog.exception.image.NotImageException;
 import eol_g.blog.service.AwsS3Service;
@@ -14,19 +14,18 @@ import java.util.Map;
 import static org.springframework.http.MediaType.*;
 
 @RestController
-@RequestMapping("/image")
+@RequestMapping("/admin/blog/img/**")
 @RequiredArgsConstructor
-public class ImageController {
+public class AdminImageController {
 
     private final AwsS3Service awsS3Service;
 
     /**
-     * 이미지 업로드 엔드포인트
-     * @return aws s3 버켓의 이미지 객체 url
+     * 이미지 업로드
      */
     @PostMapping("/upload")
     @ResponseStatus(HttpStatus.CREATED)
-    public Map<String, String> uploadImage(@RequestParam("file") MultipartFile file) throws IOException {
+    public Map<String, String> upload(@RequestParam("file") MultipartFile file) throws IOException {
         // 이미지 파일 형식 검사
         String contentType = file.getContentType();
         if (!contentType.equals(IMAGE_GIF_VALUE)

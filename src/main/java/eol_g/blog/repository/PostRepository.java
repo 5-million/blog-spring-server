@@ -1,6 +1,7 @@
 package eol_g.blog.repository;
 
 import eol_g.blog.domain.Post;
+import eol_g.blog.domain.PostStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -24,17 +25,24 @@ public class PostRepository {
         return Optional.ofNullable(post);
     }
 
+    public Optional<List<Post>> findAll() {
+        List<Post> result = em.createQuery("select p from Post p").getResultList();
+        return Optional.ofNullable(result);
+    }
+
+    public Optional<List<Post>> findPublicPosts() {
+        List<Post> result = em.createQuery("select p from Post p where p.status = :status")
+                .setParameter("status", PostStatus.PUBLIC)
+                .getResultList();
+        return Optional.ofNullable(result);
+    }
+
     public Optional<Post> findBySubject(String subject) {
         List<Post> result = em.createQuery("select p from Post p where p.subject = :subject")
                 .setParameter("subject", subject)
                 .getResultList();
 
         return result.stream().findAny();
-    }
-
-    public Optional<List<Post>> findAll() {
-        List<Post> result = em.createQuery("select p from Post p").getResultList();
-        return Optional.ofNullable(result);
     }
 
     public Optional<List<Post>> findByCategory(String category) {

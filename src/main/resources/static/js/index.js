@@ -4,8 +4,8 @@ const createCategoryBtn = async () => {
     name: category.value,
   };
 
-  const response = await fetch("/category", {
-    method: "POST",
+  const response = await fetch("/admin/blog/category", {
+    method: "post",
     headers: {
       "Content-Type": "application/json;charset=utf-8",
     },
@@ -41,7 +41,7 @@ const createTableRow = (idx, post) => {
 };
 
 const getPostList = async () => {
-  const response = await fetch("/posts")
+  const response = await fetch("/admin/blog/posts")
     .then((response) => response.json())
     .then((response) => {
       response.map((post, index) => {

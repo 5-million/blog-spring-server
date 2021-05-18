@@ -198,6 +198,53 @@ class PostServiceTest {
     }
 
     @Test
+    void getPublicPosts() {
+        //given
+        List<Post> testPostList = new ArrayList<>();
+        String category = "spring";
+        for (Long id = 0L; id < 50; id++) {
+            Post testPost = createTestPost(id, category);
+            testPostList.add(testPost);
+        }
+
+        given(postRepository.findPublicPosts()).willReturn(Optional.ofNullable(testPostList));
+
+        //when
+        List<PostListDto> result = postService.getPublicPosts();
+
+        //then
+        List<PostListDto> expected = new ArrayList<>();
+        for (Post post : testPostList) {
+            PostListDto dto = PostListDto.builder()
+                    .id(post.getId())
+                    .category(post.getCategory())
+                    .subject(post.getSubject())
+                    .uploadDate(post.getUploadDate())
+                    .status(post.getStatus())
+                    .build();
+            expected.add(dto);
+        }
+
+        assertEquals(expected.size(), result.size(), "리스트의 크기가 동일해야합니다.");
+        for (int idx = 0; idx < expected.size(); idx++) {
+            assertEquals(expected.get(idx).toString(), result.get(idx).toString(), "각 원소의 내용이 같아야 합니다.");
+        }
+    }
+
+    @Test
+    void getPublicPosts_NotExistException() {
+        //given
+        given(postRepository.findPublicPosts()).willReturn(Optional.empty());
+
+        //when
+        PostNotExistException thrown =
+                assertThrows(PostNotExistException.class, () -> postService.getPublicPosts());
+
+        //then
+        assertEquals(ErrorCode.POST_NOT_EXIST, thrown.getErrorCode(), "POST_NOT_EXIST 예외를 던져야 합니다.");
+    }
+
+    @Test
     void getByCategory() {
         //given
         List<Post> testPostList = new ArrayList<>();

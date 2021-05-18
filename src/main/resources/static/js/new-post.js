@@ -11,7 +11,7 @@ const createSelectOption = (name) => {
 };
 
 const getCategories = () => {
-  fetch("/category")
+  fetch("/api/blog/category")
     .then((response) => response.json())
     .then((response) => {
       response.map((name) => {
@@ -36,7 +36,7 @@ const uploadPostBtn = async () => {
     content,
   };
 
-  const response = await fetch("/posts/upload", {
+  const response = await fetch("/admin/blog/posts", {
     method: "POST",
     headers: {
       "Content-Type": "application/json;charset=utf-8",
@@ -64,7 +64,7 @@ const savePostBtn = async () => {
     content,
   };
 
-  const response = await fetch("/posts/upload", {
+  const response = await fetch("/admin/blog/posts", {
     method: "POST",
     headers: {
       "Content-Type": "application/json;charset=utf-8",
@@ -102,7 +102,7 @@ const imageUploadBtn = () => {
   const formData = new FormData();
   formData.append("file", file);
 
-  fetch("/image/upload", {
+  fetch("/admin/blog/img/upload", {
     method: "post",
     headers: {},
     body: formData,

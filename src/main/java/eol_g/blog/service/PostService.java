@@ -129,6 +129,30 @@ public class PostService {
     }
 
     /**
+     * 공개된 포스트 가져오기
+     */
+    public List<PostListDto> getPublicPosts() {
+        Optional<List<Post>> optPostList = postRepository.findPublicPosts();
+
+        if (!optPostList.isPresent()) throw new PostNotExistException();
+
+        List<Post> postList = optPostList.get();
+        List<PostListDto> posts = new ArrayList<>();
+        for (Post post : postList) {
+            PostListDto dto = PostListDto.builder()
+                    .id(post.getId())
+                    .category(post.getCategory())
+                    .subject(post.getSubject())
+                    .uploadDate(post.getUploadDate())
+                    .status(post.getStatus())
+                    .build();
+            posts.add(dto);
+        }
+
+        return posts;
+    }
+
+    /**
      * 카테고리별 포스트
      */
     public List<PostListDto> getByCategory(String category) {
