@@ -35,6 +35,7 @@ public class Post {
     @Enumerated(EnumType.STRING)
     private PostStatus status;
 
+    //== 생성자 로직 ==//
     @Builder
     private Post(Long id, Category category, String subject, String filePath, String s3Key, PostStatus status) {
         this.id = id;
@@ -44,5 +45,32 @@ public class Post {
         this.s3Key = s3Key;
         this.uploadDate = LocalDate.now();
         this.status = status;
+    }
+
+    //== 비즈니스 로직 ==//
+    public void updateCategory(Category newCategory) {
+        category = newCategory;
+    }
+
+    public void updateSubject(String newSubject) {
+        subject = newSubject;
+    }
+
+    public void updateFilePath(String newFilePath) {
+        filePath = newFilePath;
+    }
+
+    public void updateS3Key(String newS3Key) {
+        s3Key = newS3Key;
+    }
+
+    public void update(Category newCategory,
+                       String newSubject,
+                       String newFilePath,
+                       String newS3Key) {
+        updateCategory(newCategory);
+        updateSubject(newSubject);
+        updateFilePath(newFilePath);
+        updateS3Key(newS3Key);
     }
 }

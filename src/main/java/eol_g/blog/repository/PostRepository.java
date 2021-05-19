@@ -52,4 +52,13 @@ public class PostRepository {
 
         return Optional.ofNullable(result);
     }
+
+    public void delete(Post post) {
+        em.remove(post);
+    }
+
+//    public void delete(Long id) {
+//        em.createQuery("delete from Post p where p.id = :id")
+//                .setParameter("id", id);
+//    }
 }

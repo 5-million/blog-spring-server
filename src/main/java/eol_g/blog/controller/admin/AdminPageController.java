@@ -10,7 +10,7 @@ public class AdminPageController {
 
     @GetMapping("/")
     public String adminPage() {
-        return "admin";
+        return "index";
     }
 
     @GetMapping("/new-post")

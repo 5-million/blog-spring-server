@@ -93,7 +93,7 @@ public class FileService {
         if (!(resultInTemp & resultInPublic)) throw new IOException("카테고리 폴더 생성 에러");
     }
 
-    private static void writeContentToFile(String content, File file) throws IOException {
+    public void writeContentToFile(String content, File file) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         writer.write(content);
         writer.close();

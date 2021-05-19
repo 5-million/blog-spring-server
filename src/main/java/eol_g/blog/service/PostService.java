@@ -5,6 +5,7 @@ import eol_g.blog.domain.Post;
 import eol_g.blog.domain.PostStatus;
 import eol_g.blog.dto.PostDto;
 import eol_g.blog.dto.PostListDto;
+import eol_g.blog.dto.PostUpdateDto;
 import eol_g.blog.dto.PostUploadDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import eol_g.blog.exception.post.PostDuplicateException;
 import eol_g.blog.repository.CategoryRepository;
 import eol_g.blog.repository.PostRepository;
 
+import javax.persistence.PostUpdate;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,74 +35,6 @@ public class PostService {
     private final AwsS3Service awsS3Service;
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
-
-    /**
-     * 포스트 업로드
-     */
-    @Transactional
-    public Long upload(PostUploadDto postDto) throws PostDuplicateException,
-            CategoryNotFoundException,
-            IOException {
-        PostStatus status = postDto.getStatus();
-        String category = postDto.getCategory();
-        String subject = postDto.getSubject();
-        String content = postDto.getContent();
-
-        // 포스트 중복 검사
-        validateDuplicatePost(subject);
-
-        // 카테고리 유효성 검사
-        Optional<Category> optCategory = categoryRepository.findByName(category);
-        Category postCategory = validateCategoryIsExist(optCategory);
-
-        // 파일 생성
-        String pathname = createPathname(status, category, subject);
-        File file = fileService.createPost(pathname, content);
-
-        // S3에 업로드
-        String s3Key = awsS3Service.upload(pathname, file);
-
-        // post db에 저장
-        Post post = Post.builder()
-                .category(postCategory)
-                .subject(subject)
-                .filePath(file.getPath())
-                .s3Key(s3Key)
-                .status(status)
-                .build();
-
-        Long postId = postRepository.save(post);
-
-        // post id 리턴
-        return postId;
-    }
-
-
-    /**
-     * id로 포스트 정보 가져오기
-     */
-    public PostDto getById(Long id) throws IOException, PostNotFoundException {
-        // 엔티티 가져오기
-        Optional<Post> optPost = postRepository.findOne(id);
-
-        // 포스트 존재여부 검사
-        if(!optPost.isPresent()) throw new PostNotExistException();
-
-        // 포스트 내용 가져오기
-        Post findPost = optPost.get();
-        String content = fileService.getContent(findPost.getFilePath(), findPost.getS3Key());
-
-        // postDto 생성
-        PostDto postDto = PostDto.builder()
-                .id(findPost.getId())
-                .category(findPost.getCategory())
-                .subject(findPost.getSubject())
-                .content(content)
-                .uploadDate(findPost.getUploadDate())
-                .build();
-
-        return postDto;
-    }
 
     /**
      * 모든 포스트 정보 가져오기
@@ -126,6 +60,32 @@ public class PostService {
         }
 
         return allPost;
+    }
+
+    /**
+     * id로 포스트 정보 가져오기
+     */
+    public PostDto getById(Long id) throws IOException {
+        // 엔티티 가져오기
+        Optional<Post> optPost = postRepository.findOne(id);
+
+        // 포스트 존재여부 검사
+        if(!optPost.isPresent()) throw new PostNotExistException();
+
+        // 포스트 내용 가져오기
+        Post findPost = optPost.get();
+        String content = fileService.getContent(findPost.getFilePath(), findPost.getS3Key());
+
+        // postDto 생성
+        PostDto postDto = PostDto.builder()
+                .id(findPost.getId())
+                .category(findPost.getCategory())
+                .subject(findPost.getSubject())
+                .content(content)
+                .uploadDate(findPost.getUploadDate())
+                .build();
+
+        return postDto;
     }
 
     /**
@@ -174,6 +134,101 @@ public class PostService {
         }
 
         return postsByCategory;
+    }
+
+    /**
+     * 포스트 업로드
+     */
+    @Transactional
+    public Long upload(PostUploadDto postDto) throws IOException {
+        PostStatus status = postDto.getStatus();
+        String category = postDto.getCategory();
+        String subject = postDto.getSubject();
+        String content = postDto.getContent();
+
+        // 포스트 중복 검사
+        validateDuplicatePost(subject);
+
+        // 카테고리 유효성 검사
+        Optional<Category> optCategory = categoryRepository.findByName(category);
+        Category postCategory = validateCategoryIsExist(optCategory);
+
+        // 파일 생성
+        String pathname = createPathname(status, category, subject);
+        File file = fileService.createPost(pathname, content);
+
+        // S3에 업로드
+        String s3Key = awsS3Service.upload(pathname, file);
+
+        // post db에 저장
+        Post post = Post.builder()
+                .category(postCategory)
+                .subject(subject)
+                .filePath(file.getPath())
+                .s3Key(s3Key)
+                .status(status)
+                .build();
+
+        Long postId = postRepository.save(post);
+
+        // post id 리턴
+        return postId;
+    }
+
+    /**
+     * 포스트 수정
+     */
+    @Transactional
+    public void update(Long id, PostUpdateDto updateDto) throws IOException {
+        // 기존 포스트 엔티티
+        Optional<Post> optPost = postRepository.findOne(id);
+        if (!optPost.isPresent()) throw new PostNotFoundException();
+        Post targetPost = optPost.get();
+
+        // 새로운 카테고리 엔티티
+        Optional<Category> optCategory = categoryRepository.findByName(updateDto.getCategory());
+        if(!optCategory.isPresent()) throw new CategoryNotFoundException();
+        Category newCategory = optCategory.get();
+
+        // 기존 포스트 파일
+        File postFile = new File(targetPost.getFilePath());
+
+        // 파일의 내용을 수정
+        fileService.writeContentToFile(updateDto.getContent(), postFile);
+
+        // s3 객체 내용 수정
+        awsS3Service.upload(targetPost.getS3Key(), postFile);
+
+        // 포스트 파일의 제목과 카테고리를 수정
+        String newPathname = createPathname(targetPost.getStatus(), updateDto.getCategory(), updateDto.getSubject());
+        postFile.renameTo(new File(newPathname));
+
+        // s3 객체의 제목과 카테고리를 수정
+        awsS3Service.move(targetPost.getS3Key(), newPathname);
+
+        // 엔티티 업데이트
+        targetPost.update(newCategory, updateDto.getSubject(), newPathname, newPathname);
+    }
+
+    /**
+     * 포스트 삭제
+     */
+    @Transactional
+    public void deleteById(Long id) {
+        // 포스트 엔티티
+        Optional<Post> optPost = postRepository.findOne(id);
+        if (!optPost.isPresent()) throw new PostNotFoundException();
+        Post targetPost = optPost.get();
+
+        // File 포스트 삭제
+        File postFile = new File(targetPost.getFilePath());
+        postFile.delete();
+
+        // s3에서 삭제
+        awsS3Service.delete(targetPost.getS3Key());
+
+        // DB 포스트 삭제
+        postRepository.delete(targetPost);
     }
 
     /**

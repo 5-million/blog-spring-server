@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 위 3개의 메타 태그는 *반드시* head 태그의 처음에 와야합니다; 어떤 다른 콘텐츠들은 반드시 이 태그들 *다음에* 와야 합니다 -->
+    <title>eol-g blog</title>
+
+    <!-- 부트스트랩 -->
+    <link href="../../../css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <!-- tui Editor's Dependecy Style -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.css"
+    />
+    <!-- tui Editor's Style -->
+    <link
+      rel="stylesheet"
+      href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css"
+    />
+    <!-- 커스텀 -->
+    <link href="../../../css/new-post.css" rel="stylesheet" />
+
+    <!-- IE8 에서 HTML5 요소와 미디어 쿼리를 위한 HTML5 shim 와 Respond.js -->
+    <!-- WARNING: Respond.js 는 당신이 file:// 을 통해 페이지를 볼 때는 동작하지 않습니다. -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <div class="header" style="text-align: center">
+      <h2>New Post</h2>
+    </div>
+    <div class="container">
+      <div class="row post-info">
+        <div class="col-8">
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            id="subject"
+            th:value="${post.subject}"
+            placeholder="제목을 입력하세요."
+          />
+        </div>
+        <div class="col">
+          <select
+            class="form-select form-select-sm"
+            id="category"
+            aria-label=".form-select-sm example"
+          >
+            <option selected>select category</option>
+            <option
+              th:each="category : ${categories}"
+              th:value="${category}"
+              th:text="${category}"
+            />
+          </select>
+        </div>
+      </div>
+
+      <div class="row img-upload">
+        <div class="col-4">
+          <div class="input-group">
+            <input
+              type="file"
+              class="form-control form-control-sm"
+              id="upload-img"
+              aria-describedby="imageUpload"
+              aria-label="Upload"
+              placeholder="이미지 선택"
+            />
+            <button
+              class="btn btn-outline-secondary btn-sm"
+              type="button"
+              id="imageUpload"
+              onclick="imageUploadBtn()"
+            >
+              upload
+            </button>
+          </div>
+        </div>
+        <div class="col">
+          <div class="row">
+            <div class="col">
+              <ul class="img-path" id="img-path-ul-0">
+                <!-- 업로드된 이미지 url + 복사기능 -->
+              </ul>
+            </div>
+            <div class="col">
+              <ul class="img-path" id="img-path-ul-1">
+                <!-- 업로드된 이미지 url + 복사기능 -->
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="editor"></div>
+      <div>
+        <a href="/admin/blog">
+          <button class="new-post-btn cancle-btn btn btn-secondary">
+            Cancle
+          </button>
+        </a>
+        <button
+          class="new-post-btn save-btn btn btn-danger"
+          id="post-save-btn"
+          onclick="deletePostBtn()"
+        >
+          Delete
+        </button>
+        <button
+          class="new-post-btn upload-btn btn btn-primary"
+          id="post-update-btn"
+          onclick="updatePostBtn()"
+        >
+          Update
+        </button>
+      </div>
+    </div>
+
+    <!-- jQuery (부트스트랩의 자바스크립트 플러그인을 위해 필요합니다) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <!-- 모든 컴파일된 플러그인을 포함합니다 (아래), 원하지 않는다면 필요한 각각의 파일을 포함하세요 -->
+    <script src="../../../js/bootstrap/bootstrap.min.js"></script>
+    <!-- fontawsome-->
+    <script
+      src="https://kit.fontawesome.com/7bd4dd405f.js"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Editor CDN -->
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <!--<script src="../../../js/new-post.js"></script>-->
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      const content = [[${post.content}]];
+      const category = [[${post.category}]];
+      const postId = [[${post.id}]]
+
+      const options = document.getElementById("category").options;
+      for(let index = 0; index < options.length; index++) {
+        if(options[index].value === category) {
+          options[index].selected = true;
+          break;
+        }
+      }
+
+      const Editor = toastui.Editor;
+      const editor = new Editor({
+        el: document.querySelector("#editor"),
+        height: "750px",
+        initialEditType: "markdown",
+        previewStyle: "vertical",
+        initialValue: content
+      });
+
+      const WINDOW_OUTER_WIDTH = window.outerWidth;
+
+      if (WINDOW_OUTER_WIDTH <= 400) {
+        editor.changePreviewStyle("tab");
+        editor.height("550px");
+      } else if (WINDOW_OUTER_WIDTH <= 1024) {
+        editor.height("635px");
+      } else {
+        editor.height("800px");
+      }
+
+      const updatePostBtn = async () => {
+        const subject = document.querySelector("#subject").value;
+        const category = document.querySelector("#category").value;
+        const content = editor.getMarkdown();
+
+        const data = {
+          subject,
+          category,
+          content,
+        };
+
+        const response = await fetch(`/admin/blog/posts/${postId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json;charset=utf-8"
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (response.ok) alert("포스트 업데이트 성공");
+        else alert("포스트 업데이트 실패");
+      }
+
+      const deletePostBtn = async () => {
+        const answer = confirm("정말 삭제하시겠습니까 ?");
+        if(!answer) return;
+
+        const response = await fetch(`/admin/blog/posts/${postId}`, {
+          method: "DELETE",
+        });
+
+        if(response.ok) alert("포스트 삭제 성공");
+        else alert("포스트 삭제 실패");
+      }
+      /*]]>*/
+    </script>
+  </body>
+</html>

@@ -68,6 +68,24 @@ public class AwsS3Service {
     }
 
     /**
+     * 객체 이동
+     */
+    public void move(String sourceObjectKey, String destinationObjectKey) {
+        // 목적지에 객체 복사
+        copy(sourceObjectKey, destinationObjectKey);
+
+        // 기존 위치의 객체 삭제
+        delete(sourceObjectKey);
+    }
+
+    /**
+     * 객체 복사
+     */
+    private void copy(String sourceObjectKey, String destinationObjectKey) {
+        amazonS3Client.copyObject(bucket, sourceObjectKey, bucket, destinationObjectKey);
+    }
+
+    /**
      * InputStream을 한 줄씩 합쳐서 String으로 반환
      */
     private static String getContent(InputStream input) throws IOException {
