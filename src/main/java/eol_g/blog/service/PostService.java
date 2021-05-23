@@ -3,10 +3,8 @@ package eol_g.blog.service;
 import eol_g.blog.domain.Category;
 import eol_g.blog.domain.Post;
 import eol_g.blog.domain.PostStatus;
-import eol_g.blog.dto.PostDto;
-import eol_g.blog.dto.PostListDto;
-import eol_g.blog.dto.PostUpdateDto;
-import eol_g.blog.dto.PostUploadDto;
+import eol_g.blog.dto.*;
+import eol_g.blog.exception.post.PostNotTempException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,7 +16,6 @@ import eol_g.blog.exception.post.PostDuplicateException;
 import eol_g.blog.repository.CategoryRepository;
 import eol_g.blog.repository.PostRepository;
 
-import javax.persistence.PostUpdate;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,7 +62,7 @@ public class PostService {
     /**
      * id로 포스트 정보 가져오기
      */
-    public PostDto getById(Long id) throws IOException {
+    public ApiPostDetailDTO getByIdForApi(Long id) throws IOException {
         // 엔티티 가져오기
         Optional<Post> optPost = postRepository.findOne(id);
 
@@ -77,7 +74,7 @@ public class PostService {
         String content = fileService.getContent(findPost.getFilePath(), findPost.getS3Key());
 
         // postDto 생성
-        PostDto postDto = PostDto.builder()
+        ApiPostDetailDTO apiPostDetailDTO = ApiPostDetailDTO.builder()
                 .id(findPost.getId())
                 .category(findPost.getCategory())
                 .subject(findPost.getSubject())
@@ -85,7 +82,30 @@ public class PostService {
                 .uploadDate(findPost.getUploadDate())
                 .build();
 
-        return postDto;
+        return apiPostDetailDTO;
+    }
+
+    /**
+     * id로 포스트 정보 가져오기 for admin
+     */
+    public AdminPostDetailDTO getByIdForAdmin(Long id) throws IOException {
+        // 포스트 엔티티
+        Optional<Post> optPost = postRepository.findOne(id);
+        if(!optPost.isPresent()) throw new PostNotExistException();
+
+        Post post = optPost.get();
+
+        // AdminPostDetailDTO 생성
+        AdminPostDetailDTO adminPostDetailDTO = AdminPostDetailDTO.builder()
+                .id(post.getId())
+                .category(post.getCategory())
+                .subject(post.getSubject())
+                .content(fileService.getContent(post.getFilePath(), post.getS3Key()))
+                .uploadDate(post.getUploadDate())
+                .status(post.getStatus())
+                .build();
+
+        return adminPostDetailDTO;
     }
 
     /**
@@ -229,6 +249,39 @@ public class PostService {
 
         // DB 포스트 삭제
         postRepository.delete(targetPost);
+    }
+
+    /**
+     * 임시저장 상태의 포스트를 공개 상태로 전환
+     */
+    @Transactional
+    public void convertToPublic(Long id) {
+        // 포스트 엔티티
+        Optional<Post> optPost = postRepository.findOne(id);
+        if(!optPost.isPresent()) throw new PostNotFoundException();
+
+        Post targetPost = optPost.get();
+
+        // 포스트가 임시상태인지 검사
+        if(targetPost.getStatus() != PostStatus.TEMP)
+            throw new PostNotTempException();
+
+        // 포스트 파일
+        File postFile = new File(targetPost.getFilePath());
+
+        // 옮겨질 pathname
+        String newPathname = createPathname(PostStatus.PUBLIC, targetPost.getCategory().getName(), targetPost.getSubject());
+
+        // 포스트 temp → public 폴더 이동
+        postFile.renameTo(new File(newPathname));
+
+        // s3 포스트 temp → public으로 이동
+        awsS3Service.move(targetPost.getS3Key(), newPathname);
+
+        // db filePath, s3Key, status update
+        targetPost.updateFilePath(newPathname);
+        targetPost.updateS3Key(newPathname);
+        targetPost.updateStatus(PostStatus.PUBLIC);
     }
 
     /**

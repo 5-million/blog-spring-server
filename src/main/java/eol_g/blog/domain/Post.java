@@ -64,6 +64,10 @@ public class Post {
         s3Key = newS3Key;
     }
 
+    public void updateStatus(PostStatus newStatus) {
+        status = newStatus;
+    }
+
     public void update(Category newCategory,
                        String newSubject,
                        String newFilePath,

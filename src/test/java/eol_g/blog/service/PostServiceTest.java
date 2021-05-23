@@ -1,6 +1,7 @@
 package eol_g.blog.service;
 
-import eol_g.blog.dto.PostDto;
+import eol_g.blog.dto.AdminPostDetailDTO;
+import eol_g.blog.dto.ApiPostDetailDTO;
 import eol_g.blog.dto.PostListDto;
 import eol_g.blog.dto.PostUploadDto;
 import eol_g.blog.error.ErrorCode;
@@ -95,7 +96,7 @@ class PostServiceTest {
     }
 
     @Test
-    void getById() throws IOException {
+    void getByIdForApi() throws IOException {
         //given
         Long postId = 1L;
         Post testPost = createTestPost(1L, "category");
@@ -105,10 +106,10 @@ class PostServiceTest {
         given(fileService.getContent(any(), any())).willReturn(content);
 
         //when
-        PostDto testPostDto = postService.getById(postId);
+        ApiPostDetailDTO testApiPostDetailDTO = postService.getByIdForApi(postId);
 
         //then
-        PostDto expectPostDto = PostDto.builder()
+        ApiPostDetailDTO expectApiPostDetailDTO = ApiPostDetailDTO.builder()
                 .id(testPost.getId())
                 .category(testPost.getCategory())
                 .subject(testPost.getSubject())
@@ -116,25 +117,25 @@ class PostServiceTest {
                 .uploadDate(testPost.getUploadDate())
                 .build();
 
-        assertEquals(expectPostDto.toString(), testPostDto.toString(), "PostDto가 정확히 생성되어야 합니다.");
+        assertEquals(expectApiPostDetailDTO.toString(), testApiPostDetailDTO.toString(), "PostDto가 정확히 생성되어야 합니다.");
     }
 
     @Test
-    void getById_NotExistException() {
+    void getByIdForApi_NotExistException() {
         //given
         Long postId = 1L;
         given(postRepository.findOne(anyLong())).willReturn(Optional.ofNullable(null));
 
         //when
         PostNotExistException thrown =
-                assertThrows(PostNotExistException.class, () -> postService.getById(postId));
+                assertThrows(PostNotExistException.class, () -> postService.getByIdForApi(postId));
 
         //then
         assertEquals(ErrorCode.POST_NOT_EXIST, thrown.getErrorCode(), "POST_NOT_EXIST 예외를 던져야합니다.");
     }
 
     @Test
-    void getById_NotFoundException() throws IOException {
+    void getByIdForApi_NotFoundException() throws IOException {
         //given
         Long postId = 1L;
         String category = "spring";
@@ -145,10 +146,66 @@ class PostServiceTest {
 
         //when
         PostNotFoundException thrown =
-                assertThrows(PostNotFoundException.class, () -> postService.getById(postId));
+                assertThrows(PostNotFoundException.class, () -> postService.getByIdForApi(postId));
 
         //then
         assertEquals(ErrorCode.POST_NOT_FOUND, thrown.getErrorCode(), "POST_NOT_FOUND 예외를 던져야합니다.");
+    }
+
+    @Test
+    void getByIdForAdmin() throws IOException {
+        //given
+        Post testPost = createTestPost(1L, "category");
+        String content = "content";
+
+        given(postRepository.findOne(anyLong())).willReturn(Optional.ofNullable(testPost));
+        given(fileService.getContent(anyString(), anyString())).willReturn(content);
+
+        //when
+        AdminPostDetailDTO result = postService.getByIdForAdmin(1L);
+
+        //then
+        AdminPostDetailDTO expected = AdminPostDetailDTO.builder()
+                .id(testPost.getId())
+                .category(testPost.getCategory())
+                .subject(testPost.getSubject())
+                .content(content)
+                .uploadDate(testPost.getUploadDate())
+                .status(testPost.getStatus())
+                .build();
+
+        assertEquals(AdminPostDetailDTO.class, result.getClass(), "AdminPostDetailDTO가 반환되어야 합니다.");
+        assertEquals(expected.toString(), result.toString(), "반환되는 값이 정확해야 합니다.");
+    }
+
+    @Test
+    void getByIdForAdmin_NotExistException() {
+        //given
+        given(postRepository.findOne(anyLong())).willReturn(Optional.empty());
+
+        //when
+        PostNotExistException thrown =
+                assertThrows(PostNotExistException.class, () -> postService.getByIdForAdmin(1L));
+
+        //then
+        assertEquals(ErrorCode.POST_NOT_EXIST, thrown.getErrorCode(), "POST_NOT_FOUND 예외를 던져야합니다.");
+    }
+
+    @Test
+    void getByIdForAdmin_NotFoundException() throws IOException {
+        //given
+        Long postId = 1L;
+        Post testPost = createTestPost(postId, "category");
+
+        given(postRepository.findOne(postId)).willReturn(Optional.ofNullable(testPost));
+        given(fileService.getContent(anyString(), anyString())).willThrow(new PostNotFoundException());
+
+        //when
+        PostNotFoundException thrown =
+                assertThrows(PostNotFoundException.class, () -> postService.getByIdForAdmin(postId));
+
+        //then
+        assertEquals(ErrorCode.POST_NOT_FOUND, thrown.getErrorCode(), "POST_NOT_EXIST 예외를 던져야합니다.");
     }
 
     @Test

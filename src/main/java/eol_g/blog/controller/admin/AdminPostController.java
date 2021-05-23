@@ -1,9 +1,6 @@
 package eol_g.blog.controller.admin;
 
-import eol_g.blog.dto.PostDto;
-import eol_g.blog.dto.PostListDto;
-import eol_g.blog.dto.PostUpdateDto;
-import eol_g.blog.dto.PostUploadDto;
+import eol_g.blog.dto.*;
 import eol_g.blog.service.CategoryService;
 import eol_g.blog.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +24,7 @@ public class AdminPostController {
      */
     @GetMapping("/admin/blog/posts/{id}")
     public String getById(@PathVariable("id") Long id, Model model) throws IOException {
-        PostDto post = postService.getById(id);
+        AdminPostDetailDTO post = postService.getByIdForAdmin(id);
         List<String> categories = categoryService.getAll();
 
         model.addAttribute("post", post);
@@ -64,6 +61,16 @@ public class AdminPostController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@PathVariable("id") Long id, @RequestBody PostUpdateDto updateDto) throws IOException {
         postService.update(id, updateDto);
+    }
+
+    /**
+     * 임시상태 포스트를 공개상태로 전환
+     */
+    @PatchMapping("/admin/blog/posts/release/{id}")
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void convertToPublic(@PathVariable("id") Long id) {
+        postService.convertToPublic(id);
     }
 
     /**

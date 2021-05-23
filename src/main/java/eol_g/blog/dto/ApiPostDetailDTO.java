@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Getter
 @ToString
-public class PostDto {
+public class ApiPostDetailDTO {
 
     private Long id;
     private String category;
@@ -18,7 +18,7 @@ public class PostDto {
     private LocalDate uploadDate;
 
     @Builder
-    private PostDto(Long id, Category category, String subject, String content, LocalDate uploadDate) {
+    private ApiPostDetailDTO(Long id, Category category, String subject, String content, LocalDate uploadDate) {
         this.id = id;
         this.category = category.getName();
         this.subject = subject;
