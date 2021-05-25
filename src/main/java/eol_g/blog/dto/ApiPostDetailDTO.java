@@ -1,5 +1,6 @@
 package eol_g.blog.dto;
 
+import eol_g.blog.domain.Post;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -24,5 +25,15 @@ public class ApiPostDetailDTO {
         this.subject = subject;
         this.content = content;
         this.uploadDate = uploadDate;
+    }
+
+    public static ApiPostDetailDTO toDTO(Post post, String content) {
+        return ApiPostDetailDTO.builder()
+                .id(post.getId())
+                .category(post.getCategory())
+                .subject(post.getSubject())
+                .content(content)
+                .uploadDate(post.getUploadDate())
+                .build();
     }
 }

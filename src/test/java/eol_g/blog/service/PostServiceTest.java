@@ -102,7 +102,7 @@ class PostServiceTest {
         Post testPost = createTestPost(1L, "category");
         String content = "test content";
 
-        given(postRepository.findOne(any())).willReturn(Optional.ofNullable(testPost));
+        given(postRepository.findById(any())).willReturn(Optional.ofNullable(testPost));
         given(fileService.getContent(any(), any())).willReturn(content);
 
         //when
@@ -124,7 +124,7 @@ class PostServiceTest {
     void getByIdForApi_NotExistException() {
         //given
         Long postId = 1L;
-        given(postRepository.findOne(anyLong())).willReturn(Optional.ofNullable(null));
+        given(postRepository.findById(anyLong())).willReturn(Optional.ofNullable(null));
 
         //when
         PostNotExistException thrown =
@@ -141,7 +141,7 @@ class PostServiceTest {
         String category = "spring";
         Post testPost = createTestPost(postId, category);
 
-        given(postRepository.findOne(anyLong())).willReturn(Optional.ofNullable(testPost));
+        given(postRepository.findById(anyLong())).willReturn(Optional.ofNullable(testPost));
         given(fileService.getContent(anyString(), anyString())).willThrow(new PostNotFoundException());
 
         //when
@@ -158,7 +158,7 @@ class PostServiceTest {
         Post testPost = createTestPost(1L, "category");
         String content = "content";
 
-        given(postRepository.findOne(anyLong())).willReturn(Optional.ofNullable(testPost));
+        given(postRepository.findById(anyLong())).willReturn(Optional.ofNullable(testPost));
         given(fileService.getContent(anyString(), anyString())).willReturn(content);
 
         //when
@@ -181,7 +181,7 @@ class PostServiceTest {
     @Test
     void getByIdForAdmin_NotExistException() {
         //given
-        given(postRepository.findOne(anyLong())).willReturn(Optional.empty());
+        given(postRepository.findById(anyLong())).willReturn(Optional.empty());
 
         //when
         PostNotExistException thrown =
@@ -197,7 +197,7 @@ class PostServiceTest {
         Long postId = 1L;
         Post testPost = createTestPost(postId, "category");
 
-        given(postRepository.findOne(postId)).willReturn(Optional.ofNullable(testPost));
+        given(postRepository.findById(postId)).willReturn(Optional.ofNullable(testPost));
         given(fileService.getContent(anyString(), anyString())).willThrow(new PostNotFoundException());
 
         //when
@@ -219,7 +219,7 @@ class PostServiceTest {
         given(postRepository.findAll()).willReturn(Optional.ofNullable(testPostList));
 
         //when
-        List<PostListDto> allPost = postService.getAll();
+        List<PostListDto> allPost = postService.getAllPostForAdmin();
 
         //then
         List<PostListDto> testAllPost = new ArrayList<>();
@@ -248,7 +248,7 @@ class PostServiceTest {
 
         //when
         PostNotExistException thrown =
-                assertThrows(PostNotExistException.class, () -> postService.getAll());
+                assertThrows(PostNotExistException.class, () -> postService.getAllPostForAdmin());
 
         //then
         assertEquals(ErrorCode.POST_NOT_EXIST, thrown.getErrorCode(), "POST_NOT_EXIST 예외를 던져야합니다.");
@@ -267,7 +267,7 @@ class PostServiceTest {
         given(postRepository.findPublicPosts()).willReturn(Optional.ofNullable(testPostList));
 
         //when
-        List<PostListDto> result = postService.getPublicPosts();
+        List<PostListDto> result = postService.getAllPostForApi();
 
         //then
         List<PostListDto> expected = new ArrayList<>();
@@ -295,7 +295,7 @@ class PostServiceTest {
 
         //when
         PostNotExistException thrown =
-                assertThrows(PostNotExistException.class, () -> postService.getPublicPosts());
+                assertThrows(PostNotExistException.class, () -> postService.getAllPostForApi());
 
         //then
         assertEquals(ErrorCode.POST_NOT_EXIST, thrown.getErrorCode(), "POST_NOT_EXIST 예외를 던져야 합니다.");

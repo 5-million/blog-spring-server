@@ -1,6 +1,7 @@
 package eol_g.blog.dto;
 
 import eol_g.blog.domain.Category;
+import eol_g.blog.domain.Post;
 import eol_g.blog.domain.PostStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,5 +33,16 @@ public class AdminPostDetailDTO {
         this.content = content;
         this.status = status.toString();
         this.uploadDate = uploadDate;
+    }
+
+    public static AdminPostDetailDTO toDTO(Post post, String content) {
+        return AdminPostDetailDTO.builder()
+                .id(post.getId())
+                .category(post.getCategory())
+                .subject(post.getSubject())
+                .content(content)
+                .status(post.getStatus())
+                .uploadDate(post.getUploadDate())
+                .build();
     }
 }

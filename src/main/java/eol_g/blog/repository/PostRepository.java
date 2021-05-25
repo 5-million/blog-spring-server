@@ -20,7 +20,7 @@ public class PostRepository {
         return post.getId();
     }
 
-    public Optional<Post> findOne(Long postId) {
+    public Optional<Post> findById(Long postId) {
         Post post = em.find(Post.class, postId);
         return Optional.ofNullable(post);
     }
@@ -46,8 +46,9 @@ public class PostRepository {
     }
 
     public Optional<List<Post>> findByCategory(String category) {
-        List<Post> result = em.createQuery("select p from Post p where p.category.name = :category")
+        List<Post> result = em.createQuery("select p from Post p where p.category.name = :category and p.status = :status")
                 .setParameter("category", category)
+                .setParameter("status", PostStatus.PUBLIC)
                 .getResultList();
 
         return Optional.ofNullable(result);

@@ -18,9 +18,9 @@ import eol_g.blog.repository.PostRepository;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,53 +36,25 @@ public class PostService {
     /**
      * 모든 포스트 정보 가져오기
      */
-    public List<PostListDto> getAll() {
-        Optional<List<Post>> optPostList = postRepository.findAll();
+    public List<PostListDto> getAllPostForAdmin() {
+        List<Post> postList = getPostEntityList();
 
-        if(!optPostList.isPresent()) throw new PostNotExistException();
-
-        List<Post> postList = optPostList.get();
-        List<PostListDto> allPost = new ArrayList<>();
-
-        for (Post p : postList) {
-            PostListDto postListDto = PostListDto.builder()
-                    .id(p.getId())
-                    .category(p.getCategory())
-                    .subject(p.getSubject())
-                    .uploadDate(p.getUploadDate())
-                    .status(p.getStatus())
-                    .build();
-
-            allPost.add(postListDto);
-        }
-
-        return allPost;
+        return PostListDto.toDTOList(postList);
     }
 
     /**
-     * id로 포스트 정보 가져오기
+     * 공개된 포스트 가져오기 for api
      */
-    public ApiPostDetailDTO getByIdForApi(Long id) throws IOException {
-        // 엔티티 가져오기
-        Optional<Post> optPost = postRepository.findOne(id);
+    public List<PostListDto> getAllPostForApi() {
+        // 공개된 포스트 엔티티 리스트 가져오기
+        List<Post> postList = getPostEntityList().stream()
+                .filter(post -> post.getStatus() == PostStatus.PUBLIC)
+                .collect(Collectors.toList());
 
-        // 포스트 존재여부 검사
-        if(!optPost.isPresent()) throw new PostNotExistException();
+        // 공개된 포스트가 존재 여부 검증
+        if(postList.size() == 0) throw new PostNotExistException();
 
-        // 포스트 내용 가져오기
-        Post findPost = optPost.get();
-        String content = fileService.getContent(findPost.getFilePath(), findPost.getS3Key());
-
-        // postDto 생성
-        ApiPostDetailDTO apiPostDetailDTO = ApiPostDetailDTO.builder()
-                .id(findPost.getId())
-                .category(findPost.getCategory())
-                .subject(findPost.getSubject())
-                .content(content)
-                .uploadDate(findPost.getUploadDate())
-                .build();
-
-        return apiPostDetailDTO;
+        return PostListDto.toDTOList(postList);
     }
 
     /**
@@ -90,70 +62,41 @@ public class PostService {
      */
     public AdminPostDetailDTO getByIdForAdmin(Long id) throws IOException {
         // 포스트 엔티티
-        Optional<Post> optPost = postRepository.findOne(id);
-        if(!optPost.isPresent()) throw new PostNotExistException();
+        Post post = getPostEntityById(id);
 
-        Post post = optPost.get();
+        // 포스트 내용 가져오기
+        String content = getPostContent(post);
 
         // AdminPostDetailDTO 생성
-        AdminPostDetailDTO adminPostDetailDTO = AdminPostDetailDTO.builder()
-                .id(post.getId())
-                .category(post.getCategory())
-                .subject(post.getSubject())
-                .content(fileService.getContent(post.getFilePath(), post.getS3Key()))
-                .uploadDate(post.getUploadDate())
-                .status(post.getStatus())
-                .build();
-
-        return adminPostDetailDTO;
+        return AdminPostDetailDTO.toDTO(post, content);
     }
 
     /**
-     * 공개된 포스트 가져오기
+     * id로 포스트 정보 가져오기 for api
      */
-    public List<PostListDto> getPublicPosts() {
-        Optional<List<Post>> optPostList = postRepository.findPublicPosts();
+    public ApiPostDetailDTO getByIdForApi(Long id) throws IOException {
+        // 엔티티 가져오기
+        Post post = getPostEntityById(id);
 
-        if (!optPostList.isPresent()) throw new PostNotExistException();
+        // 임시저장 상태의 포스트인 경우 포스트를 감춤
+        if(post.getStatus() == PostStatus.TEMP)
+            throw new PostNotExistException();
 
-        List<Post> postList = optPostList.get();
-        List<PostListDto> posts = new ArrayList<>();
-        for (Post post : postList) {
-            PostListDto dto = PostListDto.builder()
-                    .id(post.getId())
-                    .category(post.getCategory())
-                    .subject(post.getSubject())
-                    .uploadDate(post.getUploadDate())
-                    .status(post.getStatus())
-                    .build();
-            posts.add(dto);
-        }
+        // 포스트 내용 가져오기
+        String content = getPostContent(post);
 
-        return posts;
+        // ApiPostDetailDTO 생성
+        return ApiPostDetailDTO.toDTO(post, content);
     }
 
     /**
-     * 카테고리별 포스트
+     * 카테고리별 공개된 포스트
      */
     public List<PostListDto> getByCategory(String category) {
-        Optional<List<Post>> optPostList = postRepository.findByCategory(category);
+        // 공개된 포스트 엔티티 리스트
+        List<Post> postList = getPostEntityListByCategory(category);
 
-        if(!optPostList.isPresent()) throw new PostNotExistException();
-
-        List<Post> postList = optPostList.get();
-        List<PostListDto> postsByCategory = new ArrayList<>();
-        for (Post post : postList) {
-            PostListDto dto = PostListDto.builder()
-                    .id(post.getId())
-                    .category(post.getCategory())
-                    .subject(post.getSubject())
-                    .status(post.getStatus())
-                    .uploadDate(post.getUploadDate())
-                    .build();
-            postsByCategory.add(dto);
-        }
-
-        return postsByCategory;
+        return PostListDto.toDTOList(postList);
     }
 
     /**
@@ -169,9 +112,8 @@ public class PostService {
         // 포스트 중복 검사
         validateDuplicatePost(subject);
 
-        // 카테고리 유효성 검사
-        Optional<Category> optCategory = categoryRepository.findByName(category);
-        Category postCategory = validateCategoryIsExist(optCategory);
+        // 카테고리 엔티티
+        Category postCategory = getCategoryEntityByName(category);
 
         // 파일 생성
         String pathname = createPathname(status, category, subject);
@@ -201,14 +143,10 @@ public class PostService {
     @Transactional
     public void update(Long id, PostUpdateDto updateDto) throws IOException {
         // 기존 포스트 엔티티
-        Optional<Post> optPost = postRepository.findOne(id);
-        if (!optPost.isPresent()) throw new PostNotFoundException();
-        Post targetPost = optPost.get();
+        Post targetPost = getPostEntityById(id);
 
         // 새로운 카테고리 엔티티
-        Optional<Category> optCategory = categoryRepository.findByName(updateDto.getCategory());
-        if(!optCategory.isPresent()) throw new CategoryNotFoundException();
-        Category newCategory = optCategory.get();
+        Category newCategory = getCategoryEntityByName(updateDto.getCategory());
 
         // 기존 포스트 파일
         File postFile = new File(targetPost.getFilePath());
@@ -234,11 +172,9 @@ public class PostService {
      * 포스트 삭제
      */
     @Transactional
-    public void deleteById(Long id) {
+    public void delete(Long id) {
         // 포스트 엔티티
-        Optional<Post> optPost = postRepository.findOne(id);
-        if (!optPost.isPresent()) throw new PostNotFoundException();
-        Post targetPost = optPost.get();
+        Post targetPost = getPostEntityById(id);
 
         // File 포스트 삭제
         File postFile = new File(targetPost.getFilePath());
@@ -257,31 +193,78 @@ public class PostService {
     @Transactional
     public void convertToPublic(Long id) {
         // 포스트 엔티티
-        Optional<Post> optPost = postRepository.findOne(id);
-        if(!optPost.isPresent()) throw new PostNotFoundException();
-
-        Post targetPost = optPost.get();
+        Post post = getPostEntityById(id);
 
         // 포스트가 임시상태인지 검사
-        if(targetPost.getStatus() != PostStatus.TEMP)
+        if(post.getStatus() != PostStatus.TEMP)
             throw new PostNotTempException();
 
         // 포스트 파일
-        File postFile = new File(targetPost.getFilePath());
+        File postFile = new File(post.getFilePath());
 
         // 옮겨질 pathname
-        String newPathname = createPathname(PostStatus.PUBLIC, targetPost.getCategory().getName(), targetPost.getSubject());
+        String newPathname = createPathname(PostStatus.PUBLIC, post.getCategory().getName(), post.getSubject());
 
         // 포스트 temp → public 폴더 이동
         postFile.renameTo(new File(newPathname));
 
         // s3 포스트 temp → public으로 이동
-        awsS3Service.move(targetPost.getS3Key(), newPathname);
+        awsS3Service.move(post.getS3Key(), newPathname);
 
         // db filePath, s3Key, status update
-        targetPost.updateFilePath(newPathname);
-        targetPost.updateS3Key(newPathname);
-        targetPost.updateStatus(PostStatus.PUBLIC);
+        post.updateFilePath(newPathname);
+        post.updateS3Key(newPathname);
+        post.updateStatus(PostStatus.PUBLIC);
+    }
+
+    /**
+     * 레포지토리에서 post entity를 가져옴
+     * id에 해당하는 포스트가 없을 경우 PostNotFoundException 예외 발생
+     */
+    private Post getPostEntityById(Long id) {
+        // 포스트 엔티티
+        Optional<Post> optional = postRepository.findById(id);
+        if (!optional.isPresent()) throw new PostNotFoundException();
+
+        return optional.get();
+    }
+
+    /**
+     * 모든 post entity list를 가져오는 함수
+     * 포스트가 존재하지 않는 경우 PostNotExistException 예외 발생
+     */
+    private List<Post> getPostEntityList() {
+        Optional<List<Post>> optional = postRepository.findAll();
+        if (!optional.isPresent()) throw new PostNotExistException();
+
+        return optional.get();
+    }
+
+    /**
+     * 카테고리별 post entity list를 가져오는 함수
+     * 검색 결과가 없을 경우 PostNotExistExeption 예외 발생
+     */
+    private List<Post> getPostEntityListByCategory(String category) {
+        Optional<List<Post>> optional = postRepository.findByCategory(category);
+        if(!optional.isPresent()) throw new PostNotExistException();
+
+        return optional.get();
+    }
+
+    /**
+     * FileService를 이용해 포스트의 내용을 가져오는 함수
+     */
+    private String getPostContent(Post post) throws IOException {
+        return fileService.getContent(post.getFilePath(), post.getS3Key());
+    }
+
+    /**
+     * 포스트 중복 검사
+     */
+    private void validateDuplicatePost(String subject) {
+        postRepository.findBySubject(subject).ifPresent(p -> {
+            throw new PostDuplicateException();
+        });
     }
 
     /**
@@ -295,19 +278,12 @@ public class PostService {
     }
 
     /**
-     * 카테고리 존재여부 검사
+     * 카테고리 이름으로 엔티티 가져오기
      */
-    private Category validateCategoryIsExist(Optional<Category> optCategory) {
-        if(!optCategory.isPresent()) throw new CategoryNotFoundException();
-        return optCategory.get();
-    }
+    private Category getCategoryEntityByName(String name) {
+        Optional<Category> optional = categoryRepository.findByName(name);
+        if(!optional.isPresent()) throw new CategoryNotFoundException();
 
-    /**
-     * 포스트 중복 검사
-     */
-    private void validateDuplicatePost(String subject) {
-        postRepository.findBySubject(subject).ifPresent(p -> {
-            throw new PostDuplicateException();
-        });
+        return optional.get();
     }
 }

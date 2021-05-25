@@ -22,7 +22,7 @@ public class ApiPostController {
     @GetMapping("/api/blog/posts")
     @ResponseStatus(HttpStatus.OK)
     public List<PostListDto> getAll() {
-        return postService.getPublicPosts();
+        return postService.getAllPostForApi();
     }
 
     /**

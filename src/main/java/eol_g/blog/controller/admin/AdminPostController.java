@@ -40,7 +40,7 @@ public class AdminPostController {
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public List<PostListDto> getAll() {
-        return postService.getAll();
+        return postService.getAllPostForAdmin();
     }
 
     /**
@@ -80,6 +80,6 @@ public class AdminPostController {
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable("id") Long id) {
-        postService.deleteById(id);
+        postService.delete(id);
     }
 }
