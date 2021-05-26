@@ -36,7 +36,7 @@ public class PostService {
     /**
      * 모든 포스트 정보 가져오기
      */
-    public List<PostListDto> getAllPostForAdmin() {
+    public List<PostListDto> getAllForAdmin() {
         List<Post> postList = getPostEntityList();
 
         return PostListDto.toDTOList(postList);
@@ -45,7 +45,7 @@ public class PostService {
     /**
      * 공개된 포스트 가져오기 for api
      */
-    public List<PostListDto> getAllPostForApi() {
+    public List<PostListDto> getAllForApi() {
         // 공개된 포스트 엔티티 리스트 가져오기
         List<Post> postList = getPostEntityList().stream()
                 .filter(post -> post.getStatus() == PostStatus.PUBLIC)
@@ -122,7 +122,7 @@ public class PostService {
         // S3에 업로드
         String s3Key = awsS3Service.upload(pathname, file);
 
-        // post db에 저장
+        // post db에 저장 후 post id 리턴
         Post post = Post.builder()
                 .category(postCategory)
                 .subject(subject)
@@ -131,10 +131,7 @@ public class PostService {
                 .status(status)
                 .build();
 
-        Long postId = postRepository.save(post);
-
-        // post id 리턴
-        return postId;
+        return postRepository.save(post);
     }
 
     /**
@@ -157,9 +154,9 @@ public class PostService {
         // s3 객체 내용 수정
         awsS3Service.upload(targetPost.getS3Key(), postFile);
 
-        // 포스트 파일의 제목과 카테고리를 수정
+        // 포스트 파일을 수정된 제목과 카테고리에 맞게 이동
         String newPathname = createPathname(targetPost.getStatus(), updateDto.getCategory(), updateDto.getSubject());
-        postFile.renameTo(new File(newPathname));
+        fileService.move(targetPost.getFilePath(), newPathname);
 
         // s3 객체의 제목과 카테고리를 수정
         awsS3Service.move(targetPost.getS3Key(), newPathname);
@@ -219,12 +216,12 @@ public class PostService {
 
     /**
      * 레포지토리에서 post entity를 가져옴
-     * id에 해당하는 포스트가 없을 경우 PostNotFoundException 예외 발생
+     * id에 해당하는 포스트가 없을 경우 PostNotExistException 예외 발생
      */
     private Post getPostEntityById(Long id) {
         // 포스트 엔티티
         Optional<Post> optional = postRepository.findById(id);
-        if (!optional.isPresent()) throw new PostNotFoundException();
+        if (!optional.isPresent()) throw new PostNotExistException();
 
         return optional.get();
     }
@@ -242,7 +239,7 @@ public class PostService {
 
     /**
      * 카테고리별 post entity list를 가져오는 함수
-     * 검색 결과가 없을 경우 PostNotExistExeption 예외 발생
+     * 검색 결과가 없을 경우 PostNotExistException 예외 발생
      */
     private List<Post> getPostEntityListByCategory(String category) {
         Optional<List<Post>> optional = postRepository.findByCategory(category);
@@ -255,8 +252,19 @@ public class PostService {
      * FileService를 이용해 포스트의 내용을 가져오는 함수
      */
     private String getPostContent(Post post) throws IOException {
-        return fileService.getContent(post.getFilePath(), post.getS3Key());
+        String content;
+
+        try {
+            // 로컬 파일에서 포스트 내용을 가져옴
+            content = fileService.getContent(post.getFilePath());
+        } catch (PostNotFoundException exception) {
+            // 로컬에 포스트 파일이 존재하지 않을 경우 s3에서 포스트 내용을 가져옴
+            content = awsS3Service.getObjectContent(post.getS3Key());
+        }
+
+        return content;
     }
+
 
     /**
      * 포스트 중복 검사

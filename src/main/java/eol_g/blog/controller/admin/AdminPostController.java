@@ -40,7 +40,7 @@ public class AdminPostController {
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     public List<PostListDto> getAll() {
-        return postService.getAllPostForAdmin();
+        return postService.getAllForAdmin();
     }
 
     /**

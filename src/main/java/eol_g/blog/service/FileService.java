@@ -11,8 +11,6 @@ import java.io.*;
 @Service
 public class FileService {
 
-    @Autowired private AwsS3Service awsS3Service;
-
     /**
      * project 실행 시 posts 폴더가 없을 경우 생성
      */
@@ -32,7 +30,7 @@ public class FileService {
     /**
      * 포스트 파일 생성
      */
-    public File createPost(String pathname, String content) throws IOException{
+    public File createPost(String pathname, String content) throws IOException {
         File file = new File(pathname);
         boolean result = file.createNewFile();
 
@@ -47,35 +45,13 @@ public class FileService {
     /**
      * get 포스트 내용
      */
-    public String getContent(String pathname, String s3Key) throws IOException, PostNotFoundException {
-        File targetFile = new File(pathname);
+    public String getContent(String filePath) throws IOException {
+        File file = new File(filePath);
 
-        // 파일이 없을 경우 s3에서 가져온다.
-        if(!targetFile.exists()) {
-            log.info("파일이 로컬 레포지토리에 존재하지 않습니다.");
-            String objectContent = awsS3Service.getObjectContent(s3Key);
+        // 파일이 없을 경우 예외 발생
+        if(!file.exists()) throw new PostNotFoundException();
 
-            boolean result = targetFile.createNewFile();
-            if(result) {
-                log.info(pathname + " 생성 성공");
-                writeContentToFile(objectContent, targetFile);
-            }
-
-            else log.info(pathname + " 생성 실패");
-
-            return objectContent;
-        }
-
-        FileReader fileReader = new FileReader(targetFile);
-        BufferedReader br = new BufferedReader(fileReader);
-
-        String content = "";
-        String readLine = null;
-        while ((readLine = br.readLine()) != null) { // 줄 단위로 읽기
-            content += readLine + "\n"; // 줄 단위로 읽기 때문에 줄 끝에 개행문자 추가
-        }
-
-        return content.trim();
+        return readContentFromFile(file);
     }
 
     /**
@@ -93,9 +69,37 @@ public class FileService {
         if (!(resultInTemp & resultInPublic)) throw new IOException("카테고리 폴더 생성 에러");
     }
 
+    /**
+     * 파일 이동 함수
+     */
+    public void move(String sourceFilePath, String destinationFilePath) {
+        File source = new File(sourceFilePath);
+        source.renameTo(new File(destinationFilePath));
+    }
+
+    /**
+     * 내용을 파일에 쓰는 함수
+     */
     public void writeContentToFile(String content, File file) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         writer.write(content);
         writer.close();
+    }
+
+    /**
+     * 포스트 파일에서 내용을 읽는 함수
+     */
+    private static String readContentFromFile(File file) throws IOException {
+        FileReader fileReader = new FileReader(file);
+        BufferedReader br = new BufferedReader(fileReader);
+
+        String content = "";
+        String readLine = null;
+        while ((readLine = br.readLine()) != null) { // 줄 단위로 읽기
+            content += readLine + "\n"; // 줄 단위로 읽기 때문에 줄 끝에 개행문자 추가
+        }
+        br.close();
+
+        return content.trim();
     }
 }
