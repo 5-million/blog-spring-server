@@ -23,26 +23,26 @@ public class AwsS3Service {
     /**
      * file을 bucket에 업로드
      */
-    public String upload(String key, File file) {
-        amazonS3Client.putObject(new PutObjectRequest(bucket, key, file)
+    public String upload(String objectKey, File sourceFile) {
+        amazonS3Client.putObject(new PutObjectRequest(bucket, objectKey, sourceFile)
                 .withCannedAcl(CannedAccessControlList.PublicRead));
 
-        return key;
+        return objectKey;
     }
 
     /**
      * 버켓에 이미지 업로드
      * @return 버켓의 이미지 객체 url
      */
-    public String uploadImage(MultipartFile file) throws IOException {
+    public String uploadImage(MultipartFile sourceFile) throws IOException {
         UUID uuid = UUID.randomUUID();
-        String key = "images/" + uuid.toString() + "-" + file.getOriginalFilename();
+        String key = "images/" + uuid.toString() + "-" + sourceFile.getOriginalFilename();
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentType(file.getContentType());
-        objectMetadata.setContentLength(file.getSize());
+        objectMetadata.setContentType(sourceFile.getContentType());
+        objectMetadata.setContentLength(sourceFile.getSize());
 
-        amazonS3Client.putObject(new PutObjectRequest(bucket, key, file.getInputStream(), objectMetadata)
+        amazonS3Client.putObject(new PutObjectRequest(bucket, key, sourceFile.getInputStream(), objectMetadata)
                 .withCannedAcl(CannedAccessControlList.PublicRead));
 
         return amazonS3Client.getUrl(bucket, key).toString();
@@ -51,9 +51,9 @@ public class AwsS3Service {
     /**
      * bucket에 있는 file의 내용 가져오기
      */
-    public String getObjectContent(String key) throws IOException, PostNotFoundException {
+    public String getObjectContent(String objectKey) throws IOException, PostNotFoundException {
         try {
-            S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, key));
+            S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, objectKey));
             return getContent(object.getObjectContent());
         } catch (AmazonS3Exception e) {
             throw new PostNotFoundException();
@@ -63,8 +63,8 @@ public class AwsS3Service {
     /**
      * bucket에서 파일 삭제
      */
-    public void delete(String key) {
-        amazonS3Client.deleteObject(new DeleteObjectRequest(bucket, key));
+    public void delete(String objectKey) {
+        amazonS3Client.deleteObject(new DeleteObjectRequest(bucket, objectKey));
     }
 
     /**

@@ -17,6 +17,7 @@ import eol_g.blog.repository.CategoryRepository;
 import eol_g.blog.repository.PostRepository;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -65,7 +66,7 @@ public class PostService {
         Post post = getPostEntityById(id);
 
         // 포스트 내용 가져오기
-        String content = getPostContent(post);
+        String content = getContent(post);
 
         // AdminPostDetailDTO 생성
         return AdminPostDetailDTO.toDTO(post, content);
@@ -83,7 +84,7 @@ public class PostService {
             throw new PostNotExistException();
 
         // 포스트 내용 가져오기
-        String content = getPostContent(post);
+        String content = getContent(post);
 
         // ApiPostDetailDTO 생성
         return ApiPostDetailDTO.toDTO(post, content);
@@ -117,7 +118,7 @@ public class PostService {
 
         // 파일 생성
         String pathname = createPathname(status, category, subject);
-        File file = fileService.createPost(pathname, content);
+        File file = fileService.createFile(pathname, content);
 
         // S3에 업로드
         String s3Key = awsS3Service.upload(pathname, file);
@@ -149,7 +150,7 @@ public class PostService {
         File postFile = new File(targetPost.getFilePath());
 
         // 파일의 내용을 수정
-        fileService.writeContentToFile(updateDto.getContent(), postFile);
+        fileService.writeContent(updateDto.getContent(), postFile);
 
         // s3 객체 내용 수정
         awsS3Service.upload(targetPost.getS3Key(), postFile);
@@ -251,13 +252,13 @@ public class PostService {
     /**
      * FileService를 이용해 포스트의 내용을 가져오는 함수
      */
-    private String getPostContent(Post post) throws IOException {
+    private String getContent(Post post) throws IOException {
         String content;
 
         try {
             // 로컬 파일에서 포스트 내용을 가져옴
             content = fileService.getContent(post.getFilePath());
-        } catch (PostNotFoundException exception) {
+        } catch (FileNotFoundException exception) {
             // 로컬에 포스트 파일이 존재하지 않을 경우 s3에서 포스트 내용을 가져옴
             content = awsS3Service.getObjectContent(post.getS3Key());
         }

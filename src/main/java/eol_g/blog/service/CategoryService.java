@@ -33,7 +33,7 @@ public class CategoryService {
         Category category = Category.createCategory(name);
 
         // 카테고리 폴더 생성
-        fileService.crateCategoryFolder(name);
+        fileService.createFolder(name);
 
         // 카테고리 저장
         return categoryRepository.save(category).getId();

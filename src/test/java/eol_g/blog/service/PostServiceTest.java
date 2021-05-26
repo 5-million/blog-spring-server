@@ -310,7 +310,7 @@ class PostServiceTest {
 
         given(postRepository.findBySubject(anyString())).willReturn(Optional.empty());
         given(categoryRepository.findByName(anyString())).willReturn(Optional.ofNullable(testCategory));
-        given(fileService.createPost(anyString(), anyString())).willReturn(uploadFile);
+        given(fileService.createFile(anyString(), anyString())).willReturn(uploadFile);
         given(awsS3Service.upload(anyString(), any(File.class))).willReturn(pathname);
         given(postRepository.save(any(Post.class))).willReturn(testPost.getId());
 

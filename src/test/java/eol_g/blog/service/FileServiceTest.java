@@ -12,8 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {
@@ -44,7 +42,7 @@ class FileServiceTest {
         String content = "content";
 
         //when
-        File post = fileService.createPost(pathname, content);
+        File post = fileService.createFile(pathname, content);
 
         //then
         String createdContent = getContent(post);
