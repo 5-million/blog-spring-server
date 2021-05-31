@@ -1,6 +1,8 @@
 package eol_g.blog.service;
 
 import eol_g.blog.domain.Category;
+import eol_g.blog.domain.PostStatus;
+import eol_g.blog.service.post.AdminPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +10,7 @@ import eol_g.blog.exception.category.CategoryDuplicateException;
 import eol_g.blog.exception.category.CategoryNotExistException;
 import eol_g.blog.repository.CategoryRepository;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,32 +35,57 @@ public class CategoryService {
         // 카테고리 생성
         Category category = Category.createCategory(name);
 
+        // 카테고리 폴더를 생성할 pathName
+        String tempPathName = createFolderPathName(PostStatus.TEMP, name);
+        String publicPathName = createFolderPathName(PostStatus.PUBLIC, name);
+
         // 카테고리 폴더 생성
-        fileService.createFolder(name);
+        fileService.createFolder(tempPathName, publicPathName);
 
         // 카테고리 저장
         return categoryRepository.save(category).getId();
     }
 
+    /**
+     * 모든 카테고리 이름을 가져오는 함수
+     */
     public List<String> getAll() {
-        Optional<List<Category>> optCategories = categoryRepository.findAll();
+        // 모든 카테고리 엔티티
+        List<Category> categoryList = getCategoryEntityList();
 
-        if(optCategories.isPresent()) {
-            List<Category> categories = optCategories.get();
-            List<String> categoryNames = new ArrayList<>();
-
-            for(Category c : categories) {
-                categoryNames.add(c.getName());
-            }
-
-            return categoryNames;
+        // 카테고리 엔티티로부터 이름만 뽑아 리스트 생성
+        List<String> categoryNameList = new ArrayList<>();
+        for (Category category : categoryList) {
+            categoryNameList.add(category.getName());
         }
-        else throw new CategoryNotExistException();
+
+        // 카테고리 이름 리스트 반환
+        return categoryNameList;
     }
 
+    /**
+     * 카테고리 리포지토리로부터 카테고리 엔티티 리스트를 가져오는 함수
+     */
+    private List<Category> getCategoryEntityList() {
+        Optional<List<Category>> optional = categoryRepository.findAll();
+        if(!optional.isPresent()) throw new CategoryNotExistException();
+
+        return optional.get();
+    }
+
+    /**
+     * 카테고리 이름 중복 검사
+     */
     private void validateDuplicateCategory(String name) {
         categoryRepository.findByName(name).ifPresent(c -> {
             throw new CategoryDuplicateException();
         });
+    }
+
+    /**
+     * 생성할 카테고리 폴더의 pathName을 생성
+     */
+    private String createFolderPathName(PostStatus status, String name) {
+        return "posts/" + status.toString().toLowerCase() + "/" + name;
     }
 }

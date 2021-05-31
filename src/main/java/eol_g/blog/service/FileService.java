@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import eol_g.blog.exception.post.PostNotFoundException;
 
 import java.io.*;
+import java.nio.file.FileAlreadyExistsException;
 
 @Slf4j
 @Service
@@ -56,16 +57,14 @@ public class FileService {
     /**
      * public과 temp 폴더 안에 카테고리 폴더 생성
      */
-    public void createFolder(String name) throws IOException {
-        // temp와 public 상태 모두 카테고리 폴더 할당
-        File folderInTemp = new File("posts/temp/" + name);
-        File folderInPublic = new File("posts/public/" + name);
+    public void createFolder(String... pathNames) throws IOException {
+        for (String pathName : pathNames) {
+            File folder = new File(pathName);
+            if(folder.exists()) throw new FileAlreadyExistsException(pathName + "은 이미 존재하는 폴더입니다.");
 
-        // 폴더 생성
-        boolean resultInTemp = folderInTemp.mkdir();
-        boolean resultInPublic = folderInPublic.mkdir();
-
-        if (!(resultInTemp & resultInPublic)) throw new IOException("카테고리 폴더 생성 에러");
+            boolean result = folder.mkdirs();
+            if(!result) throw new IOException();
+        }
     }
 
     /**
