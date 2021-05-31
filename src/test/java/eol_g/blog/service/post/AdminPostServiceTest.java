@@ -63,7 +63,7 @@ class AdminPostServiceTest extends PostServiceTest {
     void upload() throws IOException {
         //given
         Long testPostId = 1L;
-        PostStatus status = PostStatus.PUBLIC;
+        PostStatus status = PostStatus.RELEASE;
         String category = "category";
         String subject = "subject";
         String content = "content";
@@ -93,7 +93,7 @@ class AdminPostServiceTest extends PostServiceTest {
         //given
         String category = "category";
         String subject = "subject";
-        PostStatus status = PostStatus.PUBLIC;
+        PostStatus status = PostStatus.RELEASE;
         PostUploadDTO testPostUploadDTO = PostUploadDTO.toDTO(status, category, subject, "content" );
         Post testPost = createTestPost(1L, category, "subject", status);
 
@@ -111,7 +111,7 @@ class AdminPostServiceTest extends PostServiceTest {
         //given
         String category = "category";
         String subject = "subject";
-        PostStatus status = PostStatus.PUBLIC;
+        PostStatus status = PostStatus.RELEASE;
         PostUploadDTO testPostUploadDTO = PostUploadDTO.toDTO(status, category, subject, "content");
 
         given(postRepository.findBySubject(subject)).willReturn(Optional.empty());
@@ -144,7 +144,7 @@ class AdminPostServiceTest extends PostServiceTest {
         //given
         Long testPostId = 1L;
         String category = "category";
-        Post testPost = createTestPost(testPostId, category, "subject", PostStatus.PUBLIC);
+        Post testPost = createTestPost(testPostId, category, "subject", PostStatus.RELEASE);
         PostUpdateDTO testPostUpdateDTO = PostUpdateDTO.toDTO(category, "subject", "content");
 
         given(postRepository.findById(testPostId)).willReturn(Optional.ofNullable(testPost));
@@ -187,12 +187,12 @@ class AdminPostServiceTest extends PostServiceTest {
     void convertToPublic_이미_공개된_포스트인_경우() {
         //given
         Long testPostId = 1L;
-        Post testPost = createTestPost(testPostId, "category", "subject", PostStatus.PUBLIC);
+        Post testPost = createTestPost(testPostId, "category", "subject", PostStatus.RELEASE);
 
         given(postRepository.findById(testPostId)).willReturn(Optional.ofNullable(testPost));
 
         //when
-        PostNotTempException thrown = assertThrows(PostNotTempException.class, () -> postService.convertToPublic(testPostId));
+        PostNotTempException thrown = assertThrows(PostNotTempException.class, () -> postService.release(testPostId));
 
         //then
         assertEquals(ErrorCode.POST_NOT_TEMP, thrown.getErrorCode());
@@ -201,7 +201,7 @@ class AdminPostServiceTest extends PostServiceTest {
     @Test
     void createPathname() {
         //given
-        PostStatus status = PostStatus.PUBLIC;
+        PostStatus status = PostStatus.RELEASE;
         String category = "category";
         String subject = "subject subject";
 

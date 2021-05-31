@@ -36,13 +36,13 @@ class ApiPostServiceTest extends PostServiceTest {
         List<PostListDTO> result = postService.getAll();
 
         //then
-        testPostList = testPostList.stream().filter(post -> post.getStatus() == PostStatus.PUBLIC).collect(Collectors.toList());
+        testPostList = testPostList.stream().filter(post -> post.getStatus() == PostStatus.RELEASE).collect(Collectors.toList());
         List<PostListDTO> expected = PostListDTO.toDTO(testPostList);
 
         assertEquals(expected.getClass(), result.getClass());
         assertEquals(expected.size(), result.size());
         for (int i = 0; i < expected.size(); i++) {
-            assertEquals(result.get(i).getStatus(), PostStatus.PUBLIC.toString());
+            assertEquals(result.get(i).getStatus(), PostStatus.RELEASE.toString());
             assertEquals(expected.get(i).toString(), result.get(i).toString());
         }
     }

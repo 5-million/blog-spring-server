@@ -29,8 +29,8 @@ public class PostServiceTest {
             Post testPost;
 
             if (id % 4 == 0) testPost = createTestPost(id, categoryName, subject, PostStatus.TEMP);
-            else if (id % 3 == 0) testPost = createTestPost(id, otherCategoryName, subject, PostStatus.PUBLIC);
-            else testPost = createTestPost(id, categoryName, subject, PostStatus.PUBLIC);
+            else if (id % 3 == 0) testPost = createTestPost(id, otherCategoryName, subject, PostStatus.RELEASE);
+            else testPost = createTestPost(id, categoryName, subject, PostStatus.RELEASE);
 
             testPostList.add(testPost);
         }

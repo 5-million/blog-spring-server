@@ -2,7 +2,6 @@ package eol_g.blog.service;
 
 import eol_g.blog.domain.Category;
 import eol_g.blog.domain.PostStatus;
-import eol_g.blog.service.post.AdminPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +9,6 @@ import eol_g.blog.exception.category.CategoryDuplicateException;
 import eol_g.blog.exception.category.CategoryNotExistException;
 import eol_g.blog.repository.CategoryRepository;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +35,7 @@ public class CategoryService {
 
         // 카테고리 폴더를 생성할 pathName
         String tempPathName = createFolderPathName(PostStatus.TEMP, name);
-        String publicPathName = createFolderPathName(PostStatus.PUBLIC, name);
+        String publicPathName = createFolderPathName(PostStatus.RELEASE, name);
 
         // 카테고리 폴더 생성
         fileService.createFolder(tempPathName, publicPathName);

@@ -15,12 +15,12 @@ public class FileService {
      * project 실행 시 posts 폴더가 없을 경우 생성
      */
     public FileService() {
-        File postsPublicFolder = new File("posts/public");
-        File postsTempFolder = new File("posts/temp");
+        File releaseFolder = new File("posts/release");
+        File tempFolder = new File("posts/temp");
 
         try {
-            if (!postsPublicFolder.exists()) postsPublicFolder.mkdirs();
-            if (!postsTempFolder.exists()) postsTempFolder.mkdirs();
+            if (!releaseFolder.exists()) releaseFolder.mkdirs();
+            if (!tempFolder.exists()) tempFolder.mkdirs();
         } catch (SecurityException e) {
             e.printStackTrace();
         }

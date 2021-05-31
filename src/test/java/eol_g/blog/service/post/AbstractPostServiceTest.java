@@ -59,7 +59,7 @@ class AbstractPostServiceTest extends PostServiceTest {
         //given
         Long id = 1L;
         String content = "content";
-        Post testPost = createTestPost(id, "category", "test_subject", PostStatus.PUBLIC);
+        Post testPost = createTestPost(id, "category", "test_subject", PostStatus.RELEASE);
 
         given(postRepository.findById(id)).willReturn(Optional.ofNullable(testPost));
         given(fileService.getContent(testPost.getFilePath())).willReturn(content);
@@ -111,7 +111,7 @@ class AbstractPostServiceTest extends PostServiceTest {
     void getById_로컬과_s3에서_포스트_파일을_찾을_수_없는_경우 () throws IOException {
         //given
         Long id = 1L;
-        Post testPost = createTestPost(id, "category", "subject", PostStatus.PUBLIC);
+        Post testPost = createTestPost(id, "category", "subject", PostStatus.RELEASE);
 
         given(postRepository.findById(id)).willReturn(Optional.ofNullable(testPost));
         given(fileService.getContent(testPost.getFilePath())).willThrow(new FileNotFoundException());
@@ -164,7 +164,7 @@ class AbstractPostServiceTest extends PostServiceTest {
     void getPostEntityById() {
         //given
         Long id = 1L;
-        Post testPost = createTestPost(id, "category", "subject", PostStatus.PUBLIC);
+        Post testPost = createTestPost(id, "category", "subject", PostStatus.RELEASE);
 
         given(postRepository.findById(id)).willReturn(Optional.ofNullable(testPost));
 
@@ -256,7 +256,7 @@ class AbstractPostServiceTest extends PostServiceTest {
     void getContent() throws IOException {
         //given
         String content = "content";
-        String pathName = createObjectKey(PostStatus.PUBLIC, "category", "subject");
+        String pathName = createObjectKey(PostStatus.RELEASE, "category", "subject");
 
         given(fileService.getContent(pathName)).willReturn(content);
 
@@ -271,7 +271,7 @@ class AbstractPostServiceTest extends PostServiceTest {
     void getContent_로컬에_파일이_존재하지_않는_경우() throws IOException {
         //given
         String content = "content";
-        Post testPost = createTestPost(1L, "category", "subject", PostStatus.PUBLIC);
+        Post testPost = createTestPost(1L, "category", "subject", PostStatus.RELEASE);
 
         given(fileService.getContent(testPost.getFilePath())).willThrow(new FileNotFoundException());
         given(awsS3Service.getObjectContent(testPost.getS3Key())).willReturn(content);

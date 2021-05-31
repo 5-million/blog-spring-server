@@ -41,7 +41,7 @@ public class PostRepository {
     public Optional<List<Post>> findByCategory(String category) {
         List<Post> result = em.createQuery("select p from Post p where p.category.name = :category and p.status = :status")
                 .setParameter("category", category)
-                .setParameter("status", PostStatus.PUBLIC)
+                .setParameter("status", PostStatus.RELEASE)
                 .getResultList();
 
         return Optional.ofNullable(result);

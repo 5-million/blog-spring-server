@@ -70,7 +70,7 @@ public class AdminPostController {
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void convertToPublic(@PathVariable("id") Long id) {
-        postService.convertToPublic(id);
+        postService.release(id);
     }
 
     /**

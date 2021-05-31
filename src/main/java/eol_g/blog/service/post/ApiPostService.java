@@ -20,7 +20,7 @@ public class ApiPostService extends AbstractPostService {
     public List<PostListDTO> getAll() {
         // 공개된 포스트 엔티티 리스트 가져오기
         List<Post> postList = getPostEntityList().stream()
-                .filter(post -> post.getStatus() == PostStatus.PUBLIC)
+                .filter(post -> post.getStatus() == PostStatus.RELEASE)
                 .collect(Collectors.toList());
 
         // 공개된 포스트가 존재 여부 검증

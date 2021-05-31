@@ -131,7 +131,7 @@ public class AdminPostService extends AbstractPostService {
      * 임시저장 상태의 포스트를 공개 상태로 전환
      */
     @Transactional
-    public void convertToPublic(Long id) {
+    public void release(Long id) {
         // 포스트 엔티티
         Post post = getPostEntityById(id);
 
@@ -143,7 +143,7 @@ public class AdminPostService extends AbstractPostService {
         File postFile = new File(post.getFilePath());
 
         // 옮겨질 pathname
-        String newPathname = createPathname(PostStatus.PUBLIC, post.getCategory().getName(), post.getSubject());
+        String newPathname = createPathname(PostStatus.RELEASE, post.getCategory().getName(), post.getSubject());
 
         // 포스트 temp → public 폴더 이동
         postFile.renameTo(new File(newPathname));
@@ -154,7 +154,7 @@ public class AdminPostService extends AbstractPostService {
         // db filePath, s3Key, status update
         post.updateFilePath(newPathname);
         post.updateS3Key(newPathname);
-        post.updateStatus(PostStatus.PUBLIC);
+        post.updateStatus(PostStatus.RELEASE);
     }
 
     /**
