@@ -1,8 +1,8 @@
 package eol_g.blog.controller.admin;
 
 import eol_g.blog.dto.*;
+import eol_g.blog.service.post.AdminPostService;
 import eol_g.blog.service.CategoryService;
-import eol_g.blog.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminPostController {
 
-    private final PostService postService;
+    private final AdminPostService postService;
     private final CategoryService categoryService;
 
     /**
@@ -24,7 +24,7 @@ public class AdminPostController {
      */
     @GetMapping("/admin/blog/posts/{id}")
     public String getById(@PathVariable("id") Long id, Model model) throws IOException {
-        AdminPostDetailDTO post = postService.getByIdForAdmin(id);
+        PostDetailDTO post = postService.getById(id);
         List<String> categories = categoryService.getAll();
 
         model.addAttribute("post", post);
@@ -39,8 +39,8 @@ public class AdminPostController {
     @GetMapping("/admin/blog/posts")
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
-    public List<PostListDto> getAll() {
-        return postService.getAllForAdmin();
+    public List<PostListDTO> getAll() {
+        return postService.getAll();
     }
 
     /**
@@ -49,7 +49,7 @@ public class AdminPostController {
     @PostMapping("/admin/blog/posts")
     @ResponseBody
     @ResponseStatus(HttpStatus.CREATED)
-    public void upload(@RequestBody PostUploadDto postDto) throws IOException {
+    public void upload(@RequestBody PostUploadDTO postDto) throws IOException {
         postService.upload(postDto);
     }
 
@@ -59,7 +59,7 @@ public class AdminPostController {
     @PatchMapping("/admin/blog/posts/{id}")
     @ResponseBody
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable("id") Long id, @RequestBody PostUpdateDto updateDto) throws IOException {
+    public void update(@PathVariable("id") Long id, @RequestBody PostUpdateDTO updateDto) throws IOException {
         postService.update(id, updateDto);
     }
 

@@ -1,8 +1,8 @@
 package eol_g.blog.controller.api;
 
-import eol_g.blog.dto.ApiPostDetailDTO;
-import eol_g.blog.dto.PostListDto;
-import eol_g.blog.service.PostService;
+import eol_g.blog.dto.PostDetailDTO;
+import eol_g.blog.dto.PostListDTO;
+import eol_g.blog.service.post.ApiPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -14,15 +14,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ApiPostController {
 
-    private final PostService postService;
+    private final ApiPostService postService;
 
     /**
      * 모든 포스트 가져오기
      */
     @GetMapping("/api/blog/posts")
     @ResponseStatus(HttpStatus.OK)
-    public List<PostListDto> getAll() {
-        return postService.getAllForApi();
+    public List<PostListDTO> getAll() {
+        return postService.getAll();
     }
 
     /**
@@ -30,8 +30,8 @@ public class ApiPostController {
      */
     @GetMapping("/api/blog/posts/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiPostDetailDTO getById(@PathVariable("id") Long id) throws IOException {
-        return postService.getByIdForApi(id);
+    public PostDetailDTO getById(@PathVariable("id") Long id) throws IOException {
+        return postService.getById(id);
     }
 
     /**
@@ -39,7 +39,7 @@ public class ApiPostController {
      */
     @GetMapping("/api/blog/posts/category")
     @ResponseStatus(HttpStatus.OK)
-    public List<PostListDto> getByCategory(@RequestParam("name") String name) {
+    public List<PostListDTO> getByCategory(@RequestParam("name") String name) {
         return postService.getByCategory(name);
     }
 }

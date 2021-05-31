@@ -30,13 +30,6 @@ public class PostRepository {
         return Optional.ofNullable(result);
     }
 
-    public Optional<List<Post>> findPublicPosts() {
-        List<Post> result = em.createQuery("select p from Post p where p.status = :status")
-                .setParameter("status", PostStatus.PUBLIC)
-                .getResultList();
-        return Optional.ofNullable(result);
-    }
-
     public Optional<Post> findBySubject(String subject) {
         List<Post> result = em.createQuery("select p from Post p where p.subject = :subject")
                 .setParameter("subject", subject)
@@ -57,9 +50,4 @@ public class PostRepository {
     public void delete(Post post) {
         em.remove(post);
     }
-
-//    public void delete(Long id) {
-//        em.createQuery("delete from Post p where p.id = :id")
-//                .setParameter("id", id);
-//    }
 }
