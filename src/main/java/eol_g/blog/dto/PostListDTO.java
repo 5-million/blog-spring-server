@@ -13,7 +13,7 @@ import java.util.List;
 
 @Getter
 @ToString
-public class PostListDto {
+public class PostListDTO {
     private Long id;
     private String category;
     private String subject;
@@ -21,7 +21,7 @@ public class PostListDto {
     private String status;
 
     @Builder
-    private PostListDto(Long id, Category category, String subject, LocalDate uploadDate, PostStatus status) {
+    private PostListDTO(Long id, Category category, String subject, LocalDate uploadDate, PostStatus status) {
         this.id = id;
         this.category = category.getName();
         this.subject = subject;
@@ -29,11 +29,11 @@ public class PostListDto {
         this.status = status.toString();
     }
 
-    public static List<PostListDto> toDTOList(List<Post> posts) {
-        List<PostListDto> entityList = new ArrayList<>();
+    public static List<PostListDTO> toDTO(List<Post> posts) {
+        List<PostListDTO> entityList = new ArrayList<>();
 
         for (Post post : posts) {
-            PostListDto dto = PostListDto.builder().id(post.getId())
+            PostListDTO dto = PostListDTO.builder().id(post.getId())
                     .category(post.getCategory())
                     .subject(post.getSubject())
                     .uploadDate(post.getUploadDate())

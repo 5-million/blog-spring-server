@@ -6,20 +6,20 @@ import lombok.Getter;
 import eol_g.blog.domain.PostStatus;
 
 @Getter
-public class PostUploadDto {
+public class PostUploadDTO {
 
     private PostStatus status;
     private String category;
     private String subject;
     private String content;
 
-    private PostUploadDto() {}
+    private PostUploadDTO() {}
 
     /**
      * json request를 PostUploadDto 객체로 변환
      */
     @JsonCreator
-    public PostUploadDto(@JsonProperty("status") PostStatus status,
+    public PostUploadDTO(@JsonProperty("status") PostStatus status,
                          @JsonProperty("category") String category,
                          @JsonProperty("subject") String subject,
                          @JsonProperty("content") String content) {
@@ -29,11 +29,11 @@ public class PostUploadDto {
         this.content = content;
     }
 
-    public static PostUploadDto createPostUploadDto(PostStatus status,
-                                                    String category,
-                                                    String subject,
-                                                    String content) {
-        PostUploadDto postDto = new PostUploadDto();
+    public static PostUploadDTO toDTO(PostStatus status,
+                                      String category,
+                                      String subject,
+                                      String content) {
+        PostUploadDTO postDto = new PostUploadDTO();
         postDto.status = status;
         postDto.category = category;
         postDto.subject = subject;
