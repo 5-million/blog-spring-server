@@ -26,7 +26,7 @@ const getCategories = () => {
 const uploadPostBtn = async () => {
   const subject = document.querySelector("#subject").value;
   const category = document.querySelector("#category").value;
-  const status = "PUBLIC";
+  const status = "RELEASE";
   const content = editor.getMarkdown();
 
   const data = {
