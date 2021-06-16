@@ -2,6 +2,7 @@ package eol_g.blog.service.post;
 
 import eol_g.blog.domain.Category;
 import eol_g.blog.domain.Post;
+import eol_g.blog.domain.PostObjectKey;
 import eol_g.blog.domain.PostStatus;
 import eol_g.blog.dto.PostListDTO;
 import eol_g.blog.dto.PostUpdateDTO;
@@ -67,17 +68,22 @@ class AdminPostServiceTest extends PostServiceTest {
         String category = "category";
         String subject = "subject";
         String content = "content";
-        String pathName = "posts/" + status.toString().toLowerCase() + "/" + category + "/" + subject + ".md";
+        String objectKey = PostObjectKey.builder()
+                .category(Category.createCategory(category))
+                .subject(subject)
+                .status(status)
+                .build()
+                .make();
 
         PostUploadDTO testPostUploadDTO = PostUploadDTO.toDTO(status, category, subject, content);
         Post testPost = createTestPost(testPostId, category, subject, status);
         Category testCategory = Category.createCategory(1L, category);
-        File testPostFile = new File(pathName);
+        File testPostFile = new File(objectKey);
 
         given(postRepository.findBySubject(subject)).willReturn(Optional.empty());
         given(categoryRepository.findByName(category)).willReturn(Optional.ofNullable(testCategory));
-        given(fileService.createFile(pathName, content)).willReturn(testPostFile);
-        given(awsS3Service.upload(pathName, testPostFile)).willReturn(pathName);
+        given(fileService.createFile(objectKey, content)).willReturn(testPostFile);
+        given(awsS3Service.upload(objectKey, testPostFile)).willReturn(objectKey);
         given(postRepository.save(any(Post.class))).willReturn(testPost.getId());
 
         //when
@@ -196,25 +202,5 @@ class AdminPostServiceTest extends PostServiceTest {
 
         //then
         assertEquals(ErrorCode.POST_NOT_TEMP, thrown.getErrorCode());
-    }
-
-    @Test
-    void createPathname() {
-        //given
-        PostStatus status = PostStatus.RELEASE;
-        String category = "category";
-        String subject = "subject subject";
-
-        //when
-        String result = postService.createPathname(status, category, subject);
-
-        //then
-        String expected = "posts/" + status.toString().toLowerCase() + "/"
-                + category + "/"
-                + subject.replace(" ", "_")
-                + ".md";
-
-        assertEquals(expected, result);
-        assertEquals(expected.equals(result), true);
     }
 }

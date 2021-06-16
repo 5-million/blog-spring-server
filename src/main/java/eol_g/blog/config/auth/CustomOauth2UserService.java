@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import eol_g.blog.config.auth.dto.OAuthAttributes;
 import eol_g.blog.config.auth.dto.SessionUser;
-import eol_g.blog.domain.Admin;
+import eol_g.blog.domain.user.Admin;
 import eol_g.blog.domain.user.User;
 import eol_g.blog.repository.UserRepository;
 

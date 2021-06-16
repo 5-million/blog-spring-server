@@ -1,5 +1,6 @@
 package eol_g.blog.domain;
 
+import eol_g.blog.exception.post.PostNotTempException;
 import lombok.*;
 
 import javax.persistence.*;
@@ -25,10 +26,7 @@ public class Post {
     private String subject;
 
     @Column(nullable = false)
-    private String filePath;
-
-    @Column(nullable = false)
-    private String s3Key;
+    private String objectKey;
 
     private LocalDate uploadDate = LocalDate.now();
 
@@ -37,44 +35,49 @@ public class Post {
 
     //== 생성자 로직 ==//
     @Builder
-    private Post(Long id, Category category, String subject, String filePath, String s3Key, PostStatus status) {
+    private Post(Long id, Category category, String subject, String objectKey, PostStatus status) {
         this.id = id;
         this.category = category;
         this.subject = subject;
-        this.filePath = filePath;
-        this.s3Key = s3Key;
+        this.objectKey = objectKey;
         this.uploadDate = LocalDate.now();
         this.status = status;
     }
 
     //== 비즈니스 로직 ==//
-    public void updateCategory(Category newCategory) {
-        category = newCategory;
-    }
-
-    public void updateSubject(String newSubject) {
-        subject = newSubject;
-    }
-
-    public void updateFilePath(String newFilePath) {
-        filePath = newFilePath;
-    }
-
-    public void updateS3Key(String newS3Key) {
-        s3Key = newS3Key;
-    }
-
-    public void updateStatus(PostStatus newStatus) {
-        status = newStatus;
-    }
-
     public void update(Category newCategory,
-                       String newSubject,
-                       String newFilePath,
-                       String newS3Key) {
+                       String newSubject) {
         updateCategory(newCategory);
         updateSubject(newSubject);
-        updateFilePath(newFilePath);
-        updateS3Key(newS3Key);
+        updateObjectKey();
+    }
+
+    private void updateCategory(Category newCategory) {
+        this.category = newCategory;
+    }
+
+    private void updateSubject(String newSubject) {
+        this.subject = newSubject;
+    }
+
+    private void updateObjectKey() {
+        this.objectKey = PostObjectKey.builder()
+                .category(this.category)
+                .subject(this.subject)
+                .status(this.status)
+                .build()
+                .make();
+    }
+
+    public void release() {
+        if (this.status == PostStatus.RELEASE)
+            throw new PostNotTempException();
+
+        updateStatus(PostStatus.RELEASE);
+        updateObjectKey();
+    }
+
+    private void updateStatus(PostStatus newStatus) {
+        this.status = newStatus;
     }
 }

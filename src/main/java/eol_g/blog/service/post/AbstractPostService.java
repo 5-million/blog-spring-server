@@ -79,10 +79,12 @@ public abstract class AbstractPostService {
 
         try {
             // 로컬 파일에서 포스트 내용을 가져옴
-            content = fileService.getContent(post.getFilePath());
+            content = fileService.getContent(post.getObjectKey());
         } catch (FileNotFoundException exception) {
             // 로컬에 포스트 파일이 존재하지 않을 경우 s3에서 포스트 내용을 가져옴
-            content = awsS3Service.getObjectContent(post.getS3Key());
+            content = awsS3Service.getObjectContent(post.getObjectKey());
+            // 로컬에 포스트 파일 재생성
+            fileService.createFile(post.getObjectKey(), content);
         }
 
         return content;
@@ -93,7 +95,9 @@ public abstract class AbstractPostService {
      */
     protected Category getCategoryEntityByName(String name) {
         Optional<Category> optional = categoryRepository.findByName(name);
-        if(!optional.isPresent()) throw new CategoryNotExistException();
+
+        if(!optional.isPresent())
+            throw new CategoryNotExistException();
 
         return optional.get();
     }

@@ -2,6 +2,7 @@ package eol_g.blog.service.post;
 
 import eol_g.blog.domain.Category;
 import eol_g.blog.domain.Post;
+import eol_g.blog.domain.PostObjectKey;
 import eol_g.blog.domain.PostStatus;
 import eol_g.blog.dto.PostDetailDTO;
 import eol_g.blog.dto.PostListDTO;
@@ -62,7 +63,7 @@ class AbstractPostServiceTest extends PostServiceTest {
         Post testPost = createTestPost(id, "category", "test_subject", PostStatus.RELEASE);
 
         given(postRepository.findById(id)).willReturn(Optional.ofNullable(testPost));
-        given(fileService.getContent(testPost.getFilePath())).willReturn(content);
+        given(fileService.getContent(testPost.getObjectKey())).willReturn(content);
 
         //when
         PostDetailDTO result = postService.getById(id);
@@ -94,8 +95,8 @@ class AbstractPostServiceTest extends PostServiceTest {
         Post testPost = createTestPost(id, "category", "subject", PostStatus.TEMP);
 
         given(postRepository.findById(id)).willReturn(Optional.ofNullable(testPost));
-        given(fileService.getContent(testPost.getFilePath())).willThrow(new FileNotFoundException());
-        given(awsS3Service.getObjectContent(testPost.getS3Key())).willReturn(content);
+        given(fileService.getContent(testPost.getObjectKey())).willThrow(new FileNotFoundException());
+        given(awsS3Service.getObjectContent(testPost.getObjectKey())).willReturn(content);
 
         //when
         PostDetailDTO result = postService.getById(id);
@@ -114,8 +115,8 @@ class AbstractPostServiceTest extends PostServiceTest {
         Post testPost = createTestPost(id, "category", "subject", PostStatus.RELEASE);
 
         given(postRepository.findById(id)).willReturn(Optional.ofNullable(testPost));
-        given(fileService.getContent(testPost.getFilePath())).willThrow(new FileNotFoundException());
-        given(awsS3Service.getObjectContent(testPost.getS3Key())).willThrow(new PostNotFoundException());
+        given(fileService.getContent(testPost.getObjectKey())).willThrow(new FileNotFoundException());
+        given(awsS3Service.getObjectContent(testPost.getObjectKey())).willThrow(new PostNotFoundException());
 
         //when
         PostNotFoundException thrown = assertThrows(PostNotFoundException.class, () -> postService.getById(id));
@@ -255,13 +256,19 @@ class AbstractPostServiceTest extends PostServiceTest {
     @Test
     void getContent() throws IOException {
         //given
+        Category category = Category.createCategory("category");
         String content = "content";
-        String pathName = createObjectKey(PostStatus.RELEASE, "category", "subject");
+        String objectKey = PostObjectKey.builder()
+                .category(category)
+                .subject("subject")
+                .status(PostStatus.RELEASE)
+                .build()
+                .make();
 
-        given(fileService.getContent(pathName)).willReturn(content);
+        given(fileService.getContent(objectKey)).willReturn(content);
 
         //when
-        String result = fileService.getContent(pathName);
+        String result = fileService.getContent(objectKey);
 
         //then
         assertEquals(content, result);
@@ -273,8 +280,8 @@ class AbstractPostServiceTest extends PostServiceTest {
         String content = "content";
         Post testPost = createTestPost(1L, "category", "subject", PostStatus.RELEASE);
 
-        given(fileService.getContent(testPost.getFilePath())).willThrow(new FileNotFoundException());
-        given(awsS3Service.getObjectContent(testPost.getS3Key())).willReturn(content);
+        given(fileService.getContent(testPost.getObjectKey())).willThrow(new FileNotFoundException());
+        given(awsS3Service.getObjectContent(testPost.getObjectKey())).willReturn(content);
 
         //when
         String result = postService.getContent(testPost);
@@ -288,8 +295,8 @@ class AbstractPostServiceTest extends PostServiceTest {
         //given
         Post testPost = createTestPost(1L, "category", "subject", PostStatus.TEMP);
 
-        given(fileService.getContent(testPost.getFilePath())).willThrow(new FileNotFoundException());
-        given(awsS3Service.getObjectContent(testPost.getS3Key())).willThrow(new PostNotFoundException());
+        given(fileService.getContent(testPost.getObjectKey())).willThrow(new FileNotFoundException());
+        given(awsS3Service.getObjectContent(testPost.getObjectKey())).willThrow(new PostNotFoundException());
 
         //when
         PostNotFoundException thrown = assertThrows(PostNotFoundException.class, () -> postService.getContent(testPost));

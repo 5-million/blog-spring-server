@@ -2,6 +2,7 @@ package eol_g.blog.service.post;
 
 import eol_g.blog.domain.Category;
 import eol_g.blog.domain.Post;
+import eol_g.blog.domain.PostObjectKey;
 import eol_g.blog.domain.PostStatus;
 
 import java.util.ArrayList;
@@ -10,13 +11,18 @@ import java.util.List;
 public class PostServiceTest {
     public Post createTestPost(Long id, String categoryName, String subject, PostStatus status) {
         Category category = Category.createCategory(categoryName);
-        String objectKey = createObjectKey(status, categoryName, subject);
+        String objectKey = PostObjectKey.builder()
+                .category(category)
+                .subject(subject)
+                .status(status)
+                .build()
+                .make();
+
         return Post.builder()
                 .id(id)
                 .category(category)
                 .subject(subject)
-                .filePath(objectKey)
-                .s3Key(objectKey)
+                .objectKey(objectKey)
                 .status(status)
                 .build();
     }
@@ -36,9 +42,5 @@ public class PostServiceTest {
         }
 
         return testPostList;
-    }
-
-    public String createObjectKey(PostStatus status, String categoryName, String subject) {
-        return "test/" + status.toString().toLowerCase() + "/" + categoryName + "/" + subject + ".md";
     }
 }

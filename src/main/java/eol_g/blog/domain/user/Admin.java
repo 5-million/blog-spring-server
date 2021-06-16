@@ -1,4 +1,4 @@
-package eol_g.blog.domain;
+package eol_g.blog.domain.user;
 
 import lombok.AccessLevel;
 import lombok.Getter;
