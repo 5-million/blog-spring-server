@@ -6,7 +6,6 @@ import eol_g.blog.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -17,21 +16,6 @@ import java.util.List;
 public class AdminPostController {
 
     private final AdminPostService postService;
-    private final CategoryService categoryService;
-
-    /**
-     * id로 포스트 가져오기
-     */
-    @GetMapping("/admin/blog/posts/{id}")
-    public String getById(@PathVariable("id") Long id, Model model) throws IOException {
-        PostDetailDTO post = postService.getById(id);
-        List<String> categories = categoryService.getAll();
-
-        model.addAttribute("post", post);
-        model.addAttribute("categories", categories);
-
-        return "update-post";
-    }
 
     /**
      * 모든 포스트 가져오기

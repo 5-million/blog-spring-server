@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -38,19 +38,24 @@
       <div class="row post-info">
         <div class="col-8">
           <input
-            type="text"
-            class="form-control form-control-sm"
-            id="subject"
-            placeholder="제목을 입력하세요."
+                  type="text"
+                  class="form-control form-control-sm"
+                  id="subject"
+                  placeholder="제목을 입력하세요."
           />
         </div>
         <div class="col">
           <select
-            class="form-select form-select-sm"
-            id="category"
-            aria-label=".form-select-sm example"
+                  class="form-select form-select-sm"
+                  id="category"
+                  aria-label=".form-select-sm example"
           >
             <option selected>select category</option>
+            <option
+                    th:each="category : ${categories}"
+                    th:value="${category}"
+                    th:text="${category}"
+            />
           </select>
         </div>
       </div>
@@ -59,18 +64,18 @@
         <div class="col-4">
           <div class="input-group">
             <input
-              type="file"
-              class="form-control form-control-sm"
-              id="upload-img"
-              aria-describedby="imageUpload"
-              aria-label="Upload"
-              placeholder="이미지 선택"
+                    type="file"
+                    class="form-control form-control-sm"
+                    id="upload-img"
+                    aria-describedby="imageUpload"
+                    aria-label="Upload"
+                    placeholder="이미지 선택"
             />
             <button
-              class="btn btn-outline-secondary btn-sm"
-              type="button"
-              id="imageUpload"
-              onclick="imageUploadBtn()"
+                    class="btn btn-outline-secondary btn-sm"
+                    type="button"
+                    id="imageUpload"
+                    onclick="imageUploadBtn()"
             >
               upload
             </button>
@@ -100,16 +105,16 @@
           </button>
         </a>
         <button
-          class="new-post-btn save-btn btn btn-success"
-          id="post-save-btn"
-          onclick="savePostBtn()"
+                class="new-post-btn save-btn btn btn-success"
+                id="post-save-btn"
+                onclick="savePostBtn()"
         >
           Save
         </button>
         <button
-          class="new-post-btn upload-btn btn btn-primary"
-          id="post-upload-btn"
-          onclick="uploadPostBtn()"
+                class="new-post-btn upload-btn btn btn-primary"
+                id="post-upload-btn"
+                onclick="uploadPostBtn()"
         >
           Upload
         </button>

@@ -1,26 +1,4 @@
 /**
- * 포스트 카테고리 select에 옵션 추가
- */
-const createSelectOption = (name) => {
-  target = document.querySelector("#category");
-  const option = `
-        <option value="${name}">${name}</option>
-    `;
-
-  target.insertAdjacentHTML("beforeend", option);
-};
-
-const getCategories = () => {
-  fetch("/api/blog/category")
-    .then((response) => response.json())
-    .then((response) => {
-      response.map((name) => {
-        createSelectOption(name);
-      });
-    });
-};
-
-/**
  * 포스트 업로드 버튼 클릭 이벤트 핸들러
  */
 const uploadPostBtn = async () => {
@@ -44,7 +22,10 @@ const uploadPostBtn = async () => {
     body: JSON.stringify(data),
   });
 
-  if (response.ok) alert("포스트 업로드 성공");
+  if (response.ok) {
+    alert("포스트 업로드 성공");
+    location.href = "/admin/blog";
+  }
   else alert("포스트 업로드 실패");
 };
 
@@ -72,7 +53,10 @@ const savePostBtn = async () => {
     body: JSON.stringify(data),
   });
 
-  if (response.ok) alert("포스트 업로드 성공");
+  if (response.ok) {
+    alert("포스트 업로드 성공");
+    location.href = "/admin/blog";
+  }
   else alert("포스트 업로드 실패");
 };
 
@@ -129,7 +113,6 @@ const copyImageUrl = (url) => {
 };
 
 let uploadImageCount = 0;
-getCategories();
 
 /**
  * tui editor 설정
@@ -148,6 +131,7 @@ if (WINDOW_OUTER_WIDTH <= 400) {
   editor.changePreviewStyle("tab");
   editor.height("550px");
 } else if (WINDOW_OUTER_WIDTH <= 1024) {
+  editor.changePreviewStyle("tab");
   editor.height("635px");
 } else {
   editor.height("800px");

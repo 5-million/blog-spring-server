@@ -195,7 +195,10 @@
           body: JSON.stringify(data),
         });
 
-        if (response.ok) alert("포스트 업데이트 성공");
+        if (response.ok) {
+          alert("포스트 업데이트 성공");
+          location.href = "/admin/blog";
+        }
         else alert("포스트 업데이트 실패");
       }
 
@@ -207,7 +210,10 @@
           method: "DELETE",
         });
 
-        if(response.ok) alert("포스트 삭제 성공");
+        if(response.ok) {
+          alert("포스트 삭제 성공");
+          location.href = "/admin/blog";
+        }
         else alert("포스트 삭제 실패");
       }
 
@@ -216,7 +222,10 @@
           method: 'PATCH'
         });
 
-        if(response.ok) alert("포스트 릴리즈");
+        if(response.ok) {
+          alert("포스트 릴리즈");
+          location.href = "/admin/blog";
+        }
         else alert('포스트 릴리즈 실패');
       }
 
