@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="ko">
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -41,7 +41,7 @@
         <table class="table table-bordered table-hover align-middle">
           <thead>
             <tr style="text-align: center">
-              <th scope="col" width="50">#</th>
+              <th scope="col" width="50">ID</th>
               <th scope="col" width="200">Category</th>
               <th scope="col">Subject</th>
               <th scope="col" width="120">Date</th>
@@ -50,7 +50,29 @@
               <th scope="col" width="70">Delete</th>
             </tr>
           </thead>
-          <tbody id="post-list"></tbody>
+          <tbody id="post-list">
+            <tr th:each="post : ${posts}">
+              <td scope="row" style="text-align: center" th:text="${post.id}"></td>
+              <td style="text-align: center" th:text="${post.category}"></td>
+              <td th:text="${post.subject}"></td>
+              <td style="text-align: center" th:text="${post.uploadDate}"></td>
+              <td style="text-align: center">
+                <button type="button" th:class="'btn btn-sm btn-' + ${post.status == 'RELEASE' ? 'info' : 'warning'}" th:text="${post.status}"></button>
+              </td>
+              <td style="text-align: center">
+                <a th:href="'/admin/blog/posts/' + ${post.id}">
+                  <button class="btn btn-success btn-sm" type="button">
+                    UPDATE
+                  </button>
+                </a>
+              </td>
+              <td style="text-align: center">
+                <button class="btn btn-danger btn-sm" type="button" th:onclick="'deletePost(' + ${post.id} + ');'">
+                  DELETE
+                </button>
+              </td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -74,31 +96,32 @@
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
-            <input
-              type="text"
-              class="form-control"
-              id="category"
-              aria-describedby="createCategory"
-              placeholder="카테고리를 입력하세요."
-            />
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-primary"
-              onclick="createCategoryBtn()"
-            >
-              Create
-            </button>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
-          </div>
+          <form action="/admin/blog/category" method="post">
+            <div class="modal-body">
+              <input
+                      type="text"
+                      class="form-control"
+                      name="category"
+                      aria-describedby="createCategory"
+                      placeholder="카테고리를 입력하세요."
+              />
+            </div>
+            <div class="modal-footer">
+              <button
+                      type="submit"
+                      class="btn btn-primary"
+              >
+                Create
+              </button>
+              <button
+                      type="button"
+                      class="btn btn-secondary"
+                      data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -108,5 +131,16 @@
     <!-- 모든 컴파일된 플러그인을 포함합니다 (아래), 원하지 않는다면 필요한 각각의 파일을 포함하세요 -->
     <script src="../../js/bootstrap/bootstrap.min.js"></script>
     <script src="../../js/index.js"></script>
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      window.onload = () => {
+        const msg = [[${msg}]];
+
+        if (msg !== null) {
+          alert(msg);
+        }
+      }
+      /*]]>*/
+    </script>
   </body>
 </html>

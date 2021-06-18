@@ -3,12 +3,15 @@ package eol_g.blog.controller.admin;
 import eol_g.blog.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.Map;
 
-@RestController
+@Controller
 @RequestMapping("/admin/blog/category/**")
 @RequiredArgsConstructor
 public class AdminCategoryController {
@@ -19,8 +22,11 @@ public class AdminCategoryController {
      * 카테고리 등록
      */
     @PostMapping("/")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void create(@RequestBody Map<String, String> body) throws IOException {
-        categoryService.create(body.get("name"));
+    public String create(@RequestParam("category") String category, RedirectAttributes model) throws IOException {
+        categoryService.create(category);
+
+        model.addFlashAttribute("msg", "카테고리 생성 완료");
+
+        return "redirect:/admin/blog";
     }
 }
