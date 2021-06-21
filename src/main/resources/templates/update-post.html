@@ -122,7 +122,6 @@
         <button
           th:if="${post.status} == TEMP"
           class="new-post-btn upload-btn btn btn-success"
-          id="post-update-btn"
           onclick="releasePostBtn()"
         >
           Release
@@ -195,10 +194,7 @@
           body: JSON.stringify(data),
         });
 
-        if (response.ok) {
-          alert("포스트 업데이트 성공");
-          location.href = "/admin/blog";
-        }
+        if (response.ok) alert("포스트 업데이트 성공");
         else alert("포스트 업데이트 실패");
       }
 
@@ -210,10 +206,7 @@
           method: "DELETE",
         });
 
-        if(response.ok) {
-          alert("포스트 삭제 성공");
-          location.href = "/admin/blog";
-        }
+        if(response.ok) alert("포스트 삭제 성공");
         else alert("포스트 삭제 실패");
       }
 
@@ -222,10 +215,7 @@
           method: 'PATCH'
         });
 
-        if(response.ok) {
-          alert("포스트 릴리즈");
-          location.href = "/admin/blog";
-        }
+        if(response.ok) alert("포스트 릴리즈");
         else alert('포스트 릴리즈 실패');
       }
 
