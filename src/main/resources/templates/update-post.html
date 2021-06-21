@@ -145,11 +145,11 @@
       /*<![CDATA[*/
       const content = [[${post.content}]];
       const category = [[${post.category}]];
-      const postId = [[${post.id}]]
+      const postId = [[${post.id}]];
 
       const options = document.getElementById("category").options;
       for(let index = 0; index < options.length; index++) {
-        if(options[index].value === category) {
+        if (options[index].value === category) {
           options[index].selected = true;
           break;
         }
@@ -175,7 +175,7 @@
         editor.height("800px");
       }
 
-      const updatePostBtn = async () => {
+      async function updatePostBtn() {
         const subject = document.querySelector("#subject").value;
         const category = document.querySelector("#category").value;
         const content = editor.getMarkdown();
@@ -194,11 +194,14 @@
           body: JSON.stringify(data),
         });
 
-        if (response.ok) alert("포스트 업데이트 성공");
+        if (response.ok) {
+          alert("포스트 업데이트 성공");
+          location.href = "/admin/blog";
+        }
         else alert("포스트 업데이트 실패");
       }
 
-      const deletePostBtn = async () => {
+      async function deletePostBtn() {
         const answer = confirm("정말 삭제하시겠습니까 ?");
         if(!answer) return;
 
@@ -206,21 +209,26 @@
           method: "DELETE",
         });
 
-        if(response.ok) alert("포스트 삭제 성공");
+        if(response.ok) {
+          alert("포스트 삭제 성공");
+          location.href = "/admin/blog";
+        }
         else alert("포스트 삭제 실패");
       }
 
-      const releasePostBtn = async () => {
+      async function releasePostBtn() {
         const response = await fetch(`/admin/blog/posts/release/${postId}`, {
           method: 'PATCH'
         });
 
-        if(response.ok) alert("포스트 릴리즈");
+        if(response.ok) {
+          alert("포스트 릴리즈");
+          location.href = "/admin/blog";
+        }
         else alert('포스트 릴리즈 실패');
       }
 
       let uploadImageCount = 0;
-
 
       /**
        * 업로드된 이미지 리스트에 추가
