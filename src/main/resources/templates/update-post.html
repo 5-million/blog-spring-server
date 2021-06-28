@@ -222,7 +222,7 @@
         });
 
         if(response.ok) {
-          alert("포스트 릴리즈");
+          alert("포스트 릴리즈 성공");
           location.href = "/admin/blog";
         }
         else alert('포스트 릴리즈 실패');
@@ -233,7 +233,7 @@
       /**
        * 업로드된 이미지 리스트에 추가
        */
-      const putUploadImageUrl = ({ filename, url }) => {
+      function putUploadImageUrl({ filename, url }) {
         const target = document.querySelector(`#img-path-ul-${uploadImageCount}`);
         const li = `
         <li>
@@ -251,7 +251,7 @@
       /**
        * 이미지 업로드 버튼 이벤트 핸들러
        */
-      const imageUploadBtn = () => {
+      function imageUploadBtn() {
         const file = document.querySelector("#upload-img").files[0];
         const formData = new FormData();
         formData.append("file", file);
@@ -272,7 +272,7 @@
       /**
        * 업로드된 이미지 url 클립보드에 복사하는 이벤트 핸들러
        */
-      const copyImageUrl = (url) => {
+      function copyImageUrl(url) {
         const createTextarea = document.createElement("textarea");
         createTextarea.value = url;
         document.body.appendChild(createTextarea);
