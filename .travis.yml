@@ -1,0 +1,54 @@
+language: java
+jdk:
+- openjdk11
+branches:
+  only:
+  - master
+
+services:
+  - mysql
+
+cache:
+  directories:
+  - "$HOME/.m2/repository"
+  - "$HOME/.gradle"
+script: "./gradlew clean build"
+notifications:
+  email:
+    recipients:
+    - kjs3870@naver.com
+
+before_deploy: # (1)
+  - zip -r blog-spring-server * # (2)
+  - mkdir -p deploy # (3)
+  - mv blog-spring-server.zip deploy/blog-spring-server.zip # (4)
+
+deploy: # (5)
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY # Travis repo setting에 설정된 값
+    secret_access_key: $AWS_SECRET_KEY # Travis repo setting에 설정된 값
+    bucket: blog-spring-server-zip # S3 버킷
+    region: us-east-2
+    skip_cleanup: true
+    acl: private # zip 파일 접근을 private으로
+    local_dir: deploy # before_deploy에서 생성한 디렉토리 # (6)
+    wait-until-deployed: true
+
+  - provider: codedeploy
+    access_key_id: $AWS_ACCESS_KEY # Travis repo settings에 설정된 값
+    secret_access_key: $AWS_SECRET_KEY # Travis repo settings에 설정된 값
+    bucket: blog-spring-server-zip # S3 버킷
+    key: blog-spring-server.zip
+    bundle_type: zip
+    application: blog-spring-server # 웹 콘솔에서 등록한 CodeDeploy 어플리케이션
+    deployment_group: blog-spring-server-deploy-group # 웹 콘솔에서 등록한 CodeDeploy 배포 그룹
+    region: us-east-2
+    wait-until-deployed: true
+    on:
+      repo: eol-g/blog-spring-server
+      branch: master
+
+
+before_install:
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS blog;'
+  - openssl aes-256-cbc -K $encrypted_1116e8e6e492_key -iv $encrypted_1116e8e6e492_iv -in application.yml.enc -out application.yml -d
