@@ -15,6 +15,8 @@ public class PostObjectKey {
     //== 생성자 로직 ==//
     @Builder
     public PostObjectKey(PostStatus status, Category category, String subject) {
+        subject = subject.replace("/", "&sl;");
+
         this.status = status;
         this.category = category;
         this.subject = subject;

@@ -32,7 +32,7 @@
 
   <body>
     <div class="header" style="text-align: center">
-      <h2>New Post</h2>
+      <h2>Update Post</h2>
     </div>
     <div class="container">
       <div class="row post-info">
@@ -147,6 +147,9 @@
       const category = [[${post.category}]];
       const postId = [[${post.id}]];
 
+      const WINDOW_OUTER_WIDTH = window.outerWidth;
+      let uploadImageCount = 0;
+
       const options = document.getElementById("category").options;
       for(let index = 0; index < options.length; index++) {
         if (options[index].value === category) {
@@ -163,8 +166,6 @@
         previewStyle: "vertical",
         initialValue: content
       });
-
-      const WINDOW_OUTER_WIDTH = window.outerWidth;
 
       if (WINDOW_OUTER_WIDTH <= 400) {
         editor.changePreviewStyle("tab");
@@ -227,8 +228,6 @@
         }
         else alert('포스트 릴리즈 실패');
       }
-
-      let uploadImageCount = 0;
 
       /**
        * 업로드된 이미지 리스트에 추가
